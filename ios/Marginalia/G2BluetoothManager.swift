@@ -465,7 +465,9 @@ extension G2BluetoothManager: CBCentralManagerDelegate {
 
             if discoveredPairs[pairKey]?.isComplete == true {
                 connectionState = .found
-                print("[G2] Found pair: L=\(discoveredPairs[pairKey]?.leftName ?? "?") R=\(discoveredPairs[pairKey]?.rightName ?? "?")")
+                print("[G2] Found complete pair: L=\(discoveredPairs[pairKey]?.leftName ?? "?") R=\(discoveredPairs[pairKey]?.rightName ?? "?")")
+                // Auto-connect to first complete pair
+                connect(pairKey: pairKey)
             }
         }
     }
