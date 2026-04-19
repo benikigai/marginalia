@@ -76,9 +76,9 @@ a:hover { text-decoration: underline; }
   -webkit-text-fill-color: transparent;
 }
 .etymology {
-  font-size: 14px;
+  font-size: 17px;
   color: var(--text-dim);
-  line-height: 1.7;
+  line-height: 1.8;
   max-width: 540px;
   margin: 0 auto 28px;
   border-left: 2px solid var(--accent);
@@ -89,14 +89,14 @@ a:hover { text-decoration: underline; }
   color: var(--text);
 }
 .tagline {
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 300;
   color: var(--text);
-  margin-bottom: 20px;
-  line-height: 1.5;
+  margin-bottom: 24px;
+  line-height: 1.4;
 }
 .hero-detail {
-  font-size: 14px;
+  font-size: 18px;
   color: var(--text-dim);
   line-height: 1.7;
   margin-bottom: 32px;
