@@ -505,9 +505,7 @@ a:hover { text-decoration: underline; }
   margin: 0 auto;
 }
 .founder-content {
-  display: grid;
-  grid-template-columns: 1fr 200px;
-  gap: 32px;
+  display: block;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
