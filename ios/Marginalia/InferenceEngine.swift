@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-struct ResponseOption: Codable {
+struct ResponseOption: Codable, Equatable {
     let label: String
     let action: String?
     let args: [String: String]?
@@ -19,6 +19,24 @@ struct CalendarEvent {
     let endDate: String
 }
 
+enum PipelineStage: String {
+    case idle = "Idle"
+    case listening = "Listening"
+    case stt = "Transcribing..."
+    case llm = "Generating options..."
+    case done = "Options ready"
+}
+
+struct ActivityEntry: Identifiable {
+    let id = UUID()
+    let timestamp: Date
+    let transcript: String
+    let options: [ResponseOption]
+    let stats: InferenceStats?
+    let source: Source
+    enum Source: String { case glasses = "G2"; case text = "Text"; case chat = "Chat" }
+}
+
 @MainActor
 class InferenceEngine: ObservableObject {
     @Published var vadStatus = "Not loaded"
@@ -28,6 +46,8 @@ class InferenceEngine: ObservableObject {
     @Published var lastOptions: [ResponseOption]?
     @Published var lastStats: InferenceStats?
     @Published var calendarEvents: [CalendarEvent] = []
+    @Published var pipelineStage: PipelineStage = .idle
+    @Published var activityLog: [ActivityEntry] = []
 
     private var vadModel: UnsafeMutableRawPointer?
     private var sttModel: UnsafeMutableRawPointer?
@@ -39,6 +59,7 @@ class InferenceEngine: ObservableObject {
     var cloudHandoffThreshold: Double = 0.0
     @Published var lastConfidence: Double?
     @Published var usedCloudHandoff = false
+    @Published var isWarming = false
 
     private let systemPrompt = """
     You are Marginalia, a private real-time commentary layer for high-stakes \
@@ -75,61 +96,116 @@ class InferenceEngine: ObservableObject {
         let sttPath = weightsDir.appendingPathComponent("parakeet-tdt-0.6b-v3").path
         let llmPath = weightsDir.appendingPathComponent("gemma-4-e2b-it").path
 
-        // Load VAD model (small, fast)
         vadStatus = "Loading..."
-        if FileManager.default.fileExists(atPath: vadPath) {
-            do {
-                vadModel = try cactusInit(vadPath, nil, false)
-                vadStatus = "Ready"
-                print("[Marginalia] VAD model loaded")
-            } catch {
-                vadStatus = "Error: \(error.localizedDescription)"
-                print("[Marginalia] VAD load failed: \(error)")
-            }
-        } else {
-            vadStatus = "Not available"
-            print("[Marginalia] VAD weights not found — using fixed buffer")
-        }
-
-        // Load STT model
         sttStatus = "Loading..."
-        if FileManager.default.fileExists(atPath: sttPath) {
-            do {
-                sttModel = try cactusInit(sttPath, nil, false)
-                sttStatus = "Ready"
-                print("[Marginalia] STT model loaded from \(sttPath)")
-            } catch {
-                sttStatus = "Error: \(error.localizedDescription)"
-                print("[Marginalia] STT load failed: \(error)")
+        llmStatus = "Loading..."
+
+        // Load all 3 models in parallel on background threads
+        let vadTask = Task.detached { () -> (UnsafeMutableRawPointer?, String) in
+            guard FileManager.default.fileExists(atPath: vadPath) else {
+                print("[Marginalia] VAD weights not found — using fixed buffer")
+                return (nil, "Not available")
             }
-        } else {
-            sttStatus = "Weights missing"
-            print("[Marginalia] STT weights not found at \(sttPath)")
+            do {
+                let model = try cactusInit(vadPath, nil, false)
+                print("[Marginalia] VAD model loaded")
+                return (model, "Ready")
+            } catch {
+                print("[Marginalia] VAD load failed: \(error)")
+                return (nil, "Error: \(error.localizedDescription)")
+            }
         }
 
-        // Load LLM model
-        llmStatus = "Loading..."
-        if FileManager.default.fileExists(atPath: llmPath) {
-            do {
-                llmModel = try cactusInit(llmPath, nil, false)
-                llmStatus = "Ready"
-                print("[Marginalia] LLM model loaded from \(llmPath)")
-
-                // Warm the model
-                llmStatus = "Warming..."
-                let warmMsg = #"[{"role":"user","content":"Hi"}]"#
-                let _ = try? cactusComplete(llmModel!, warmMsg, #"{"max_tokens":1}"#, nil, nil)
-                llmStatus = "Ready"
-                print("[Marginalia] LLM warm done")
-            } catch {
-                llmStatus = "Error: \(error.localizedDescription)"
-                print("[Marginalia] LLM load failed: \(error)")
+        let sttTask = Task.detached { () -> (UnsafeMutableRawPointer?, String) in
+            guard FileManager.default.fileExists(atPath: sttPath) else {
+                print("[Marginalia] STT weights not found at \(sttPath)")
+                return (nil, "Weights missing")
             }
-        } else {
-            llmStatus = "Weights missing"
-            print("[Marginalia] LLM weights not found at \(llmPath)")
+            do {
+                let model = try cactusInit(sttPath, nil, false)
+                print("[Marginalia] STT model loaded from \(sttPath)")
+                return (model, "Ready")
+            } catch {
+                print("[Marginalia] STT load failed: \(error)")
+                return (nil, "Error: \(error.localizedDescription)")
+            }
+        }
+
+        let llmTask = Task.detached { () -> (UnsafeMutableRawPointer?, String) in
+            guard FileManager.default.fileExists(atPath: llmPath) else {
+                print("[Marginalia] LLM weights not found at \(llmPath)")
+                return (nil, "Weights missing")
+            }
+            do {
+                let model = try cactusInit(llmPath, nil, false)
+                print("[Marginalia] LLM model loaded from \(llmPath)")
+                return (model, "Ready")
+            } catch {
+                print("[Marginalia] LLM load failed: \(error)")
+                return (nil, "Error: \(error.localizedDescription)")
+            }
+        }
+
+        // Await all results (wall time ≈ max of the three, not sum)
+        let vadResult = await vadTask.value
+        let sttResult = await sttTask.value
+        let llmResult = await llmTask.value
+
+        vadModel = vadResult.0
+        vadStatus = vadResult.1
+        sttModel = sttResult.0
+        sttStatus = sttResult.1
+        llmModel = llmResult.0
+        llmStatus = llmResult.1
+
+        if llmModel == nil && !llmStatus.contains("Error") {
             dummyMode = true
             llmStatus = "Dummy mode"
+        }
+
+        // Fire-and-forget warm-up — UI shows "Ready" immediately
+        if let model = llmModel {
+            isWarming = true
+            llmStatus = "Warming..."
+            Task.detached { [weak self] in
+                let warmMsg = #"[{"role":"user","content":"Hi"}]"#
+                let _ = try? cactusComplete(model, warmMsg, #"{"max_tokens":1}"#, nil, nil)
+                await MainActor.run {
+                    self?.isWarming = false
+                    self?.llmStatus = "Ready"
+                    print("[Marginalia] LLM warm done")
+                }
+            }
+        }
+    }
+
+    /// Simple text chat with the LLM.
+    func chat(prompt: String) async -> String {
+        guard let llmModel = llmModel else {
+            return "Error: LLM not loaded"
+        }
+
+        let escaped = prompt
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: "\\n")
+        let messages = "[{\"role\":\"user\",\"content\":\"\(escaped)\"}]"
+
+        do {
+            cactusReset(llmModel)
+            let raw = try cactusComplete(llmModel, messages, #"{"max_tokens":256}"#, nil, nil)
+
+            var response = raw
+            if let data = raw.data(using: .utf8),
+               let envelope = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let resp = envelope["response"] as? String {
+                response = resp
+            }
+            let chatOption = ResponseOption(label: response, action: nil, args: nil)
+            logActivity(transcript: prompt, options: [chatOption], stats: nil, source: .chat)
+            return response
+        } catch {
+            return "Error: \(error.localizedDescription)"
         }
     }
 
@@ -164,6 +240,7 @@ class InferenceEngine: ObservableObject {
                 ["label": opt.label, "action": opt.action, "args": opt.args]
             }
             lastOptions = dummyResponse
+            pipelineStage = .done
             displayText = "3 options ready"
             return ["options": options]
         }
@@ -172,6 +249,7 @@ class InferenceEngine: ObservableObject {
         var transcript = ""
 
         // Step 1: STT with Parakeet
+        pipelineStage = .stt
         if let sttModel = sttModel {
             let sttStart = Date()
             do {
@@ -194,6 +272,7 @@ class InferenceEngine: ObservableObject {
         }
 
         // Step 2: LLM completion
+        pipelineStage = .llm
         let llmStart = Date()
         let messages = """
         [{"role":"system","content":"\(systemPrompt.replacingOccurrences(of: "\"", with: "\\\"").replacingOccurrences(of: "\n", with: "\\n"))"},{"role":"user","content":"The other person just said: \\"\(transcript.replacingOccurrences(of: "\"", with: "\\\""))\\" — provide 3 tactical response options."}]
@@ -224,9 +303,13 @@ class InferenceEngine: ObservableObject {
             }
 
             let parsed = parseResponse(raw)
+            let stats = InferenceStats(sttMs: sttMs, llmMs: llmMs, totalMs: totalMs)
             lastOptions = parsed
-            lastStats = InferenceStats(sttMs: sttMs, llmMs: llmMs, totalMs: totalMs)
+            lastStats = stats
+            pipelineStage = .done
             displayText = "3 options ready"
+
+            logActivity(transcript: transcript, options: parsed, stats: stats, source: .glasses)
 
             let optionDicts = parsed.map { opt -> [String: Any?] in
                 ["label": opt.label, "action": opt.action, "args": opt.args]
@@ -241,10 +324,70 @@ class InferenceEngine: ObservableObject {
         } catch {
             print("[Marginalia] LLM failed: \(error)")
             lastOptions = dummyResponse
+            pipelineStage = .done
+            logActivity(transcript: transcript, options: dummyResponse, stats: nil, source: .glasses)
             let optionDicts = dummyResponse.map { opt -> [String: Any?] in
                 ["label": opt.label, "action": opt.action, "args": opt.args]
             }
             return ["options": optionDicts, "fallback": true]
+        }
+    }
+
+    /// Run inference from typed text (no STT step).
+    func runTextInference(text: String) async {
+        let t0 = Date()
+        pipelineStage = .llm
+
+        if dummyMode || llmModel == nil {
+            lastOptions = dummyResponse
+            pipelineStage = .done
+            displayText = "3 options ready"
+            logActivity(transcript: text, options: dummyResponse, stats: nil, source: .text)
+            return
+        }
+
+        let llmStart = Date()
+        let escapedPrompt = systemPrompt
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: "\\n")
+        let escapedText = text
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+        let messages = """
+        [{"role":"system","content":"\(escapedPrompt)"},{"role":"user","content":"The other person just said: \\"\(escapedText)\\" — provide 3 tactical response options."}]
+        """
+
+        let optionsDict: [String: Any] = cloudHandoffThreshold > 0
+            ? ["max_tokens": 512, "confidence_threshold": cloudHandoffThreshold]
+            : ["max_tokens": 512]
+        let optionsJson = String(data: try! JSONSerialization.data(withJSONObject: optionsDict), encoding: .utf8)!
+
+        do {
+            cactusReset(llmModel!)
+            let raw = try cactusComplete(llmModel!, messages, optionsJson, tools, nil)
+            let llmMs = Int(Date().timeIntervalSince(llmStart) * 1000)
+            let totalMs = Int(Date().timeIntervalSince(t0) * 1000)
+
+            let parsed = parseResponse(raw)
+            let stats = InferenceStats(sttMs: 0, llmMs: llmMs, totalMs: totalMs)
+            lastOptions = parsed
+            lastStats = stats
+            pipelineStage = .done
+            displayText = "3 options ready"
+            logActivity(transcript: text, options: parsed, stats: stats, source: .text)
+        } catch {
+            print("[Marginalia] Text inference failed: \(error)")
+            lastOptions = dummyResponse
+            pipelineStage = .done
+            logActivity(transcript: text, options: dummyResponse, stats: nil, source: .text)
+        }
+    }
+
+    private func logActivity(transcript: String, options: [ResponseOption], stats: InferenceStats?, source: ActivityEntry.Source) {
+        let entry = ActivityEntry(timestamp: Date(), transcript: transcript, options: options, stats: stats, source: source)
+        activityLog.insert(entry, at: 0)
+        if activityLog.count > 50 {
+            activityLog = Array(activityLog.prefix(50))
         }
     }
 

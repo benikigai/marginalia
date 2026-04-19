@@ -94,6 +94,9 @@ class LocalServer: ObservableObject {
         case ("POST", "/inference"):
             handleInference(request: request, rawData: rawData, connection: connection)
 
+        case ("POST", "/inference-text"):
+            handleInferenceText(request: request, rawData: rawData, connection: connection)
+
         case ("POST", "/tool-call-json"):
             handleToolCall(request: request, rawData: rawData, connection: connection)
 
@@ -160,6 +163,36 @@ class LocalServer: ObservableObject {
                 self.sendResponse(connection: connection, status: 200, body: jsonStr)
             } else {
                 self.sendResponse(connection: connection, status: 500, body: #"{"error":"Serialization failed"}"#)
+            }
+        }
+    }
+
+    private func handleInferenceText(request: String, rawData: Data, connection: NWConnection) {
+        guard let bodyData = extractBody(from: rawData),
+              let body = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
+              let text = body["text"] as? String else {
+            sendResponse(connection: connection, status: 400, body: #"{"error":"Missing 'text' field"}"#)
+            return
+        }
+
+        Task { @MainActor in
+            guard let engine = self.engine else {
+                self.sendResponse(connection: connection, status: 503, body: #"{"error":"Engine not ready"}"#)
+                return
+            }
+
+            let response = await engine.chat(prompt: "The other person just said: \"\(text)\" \u{2014} provide 3 tactical response options.")
+
+            // Try to parse as JSON options, otherwise wrap as raw response
+            if let data = response.data(using: .utf8),
+               let _ = try? JSONSerialization.jsonObject(with: data) {
+                self.sendResponse(connection: connection, status: 200, body: response)
+            } else {
+                let escaped = response
+                    .replacingOccurrences(of: "\\", with: "\\\\")
+                    .replacingOccurrences(of: "\"", with: "\\\"")
+                    .replacingOccurrences(of: "\n", with: "\\n")
+                self.sendResponse(connection: connection, status: 200, body: #"{"response":"\#(escaped)"}"#)
             }
         }
     }

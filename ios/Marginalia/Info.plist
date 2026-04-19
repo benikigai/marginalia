@@ -27,6 +27,10 @@
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Marginalia serves a local web app for the Even Realities G2 glasses.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Marginalia connects to Even Realities G2 smart glasses via Bluetooth to display response options on the lens.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Marginalia connects to Even Realities G2 smart glasses via Bluetooth.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Marginalia uses the microphone as a fallback audio input.</string>
 	<key>UIFileSharingEnabled</key>

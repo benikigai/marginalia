@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marginalia — Calendar</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0f;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'Helvetica Neue', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: #ffffff;
+    margin-bottom: 8px;
+  }
+  .header .subtitle {
+    font-size: 14px;
+    color: #666;
+    letter-spacing: 2px;
+  }
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #555;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+    transition: background 0.3s;
+  }
+  .status-dot.connected { background: #4ade80; }
+
+  .calendar {
+    display: grid;
+    grid-template-columns: 80px repeat(5, 1fr);
+    grid-template-rows: 40px repeat(9, 60px);
+    gap: 1px;
+    background: #1a1a2e;
+    border: 1px solid #1a1a2e;
+    border-radius: 12px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  .day-header {
+    background: #12121f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: #888;
+    letter-spacing: 1px;
+  }
+  .time-label {
+    background: #0d0d18;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 4px 8px 0 0;
+    font-size: 11px;
+    color: #444;
+    font-variant-numeric: tabular-nums;
+  }
+  .cell {
+    background: #0d0d18;
+    position: relative;
+    transition: background 0.2s;
+  }
+
+  .event {
+    position: absolute;
+    left: 3px;
+    right: 3px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #fff;
+    overflow: hidden;
+    animation: eventSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3);
+    z-index: 10;
+  }
+  .event .event-title {
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .event .event-detail {
+    font-size: 10px;
+    opacity: 0.8;
+  }
+
+  @keyframes eventSlideIn {
+    from { transform: translateY(-10px) scale(0.95); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  .flash {
+    animation: cellFlash 0.8s ease-out;
+  }
+  @keyframes cellFlash {
+    0% { background: rgba(99, 102, 241, 0.2); }
+    100% { background: #0d0d18; }
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1e1e2e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 13px;
+    color: #e0e0e0;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 100;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Marginalia</h1>
+  <div class="subtitle">Calendar Projection</div>
+  <div class="status">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Connecting...</span>
+  </div>
+</div>
+
+<div class="calendar" id="calendar"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// Build the week grid
+const days = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+const hours = ['8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM'];
+const cal = document.getElementById('calendar');
+
+// Corner cell
+cal.innerHTML = '<div class="day-header"></div>';
+// Day headers
+days.forEach(d => { cal.innerHTML += `<div class="day-header">${d}</div>`; });
+// Time rows
+hours.forEach((h, hi) => {
+  cal.innerHTML += `<div class="time-label">${h}</div>`;
+  days.forEach((d, di) => {
+    cal.innerHTML += `<div class="cell" data-day="${di}" data-hour="${hi}" id="cell-${di}-${hi}"></div>`;
+  });
+});
+
+// Map date string to day column (0=Mon..4=Fri)
+function dateToDayCol(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const dow = d.getDay(); // 0=Sun, 1=Mon...
+  return dow >= 1 && dow <= 5 ? dow - 1 : -1;
+}
+
+// Add a calendar event visually
+function addEvent(title, startDate, endDate) {
+  const startCol = dateToDayCol(startDate);
+  const endCol = dateToDayCol(endDate);
+  if (startCol === -1) return;
+
+  const numDays = Math.max(1, (endCol >= startCol ? endCol - startCol + 1 : 1));
+  // Place event at 9 AM row (hour index 1), spanning 3 hours visually
+  const startHour = 1;
+  const spanHours = 3;
+
+  for (let dayOffset = 0; dayOffset < numDays && (startCol + dayOffset) < 5; dayOffset++) {
+    const col = startCol + dayOffset;
+    const cell = document.getElementById(`cell-${col}-${startHour}`);
+    if (!cell) continue;
+
+    const el = document.createElement('div');
+    el.className = 'event';
+    el.style.top = '2px';
+    el.style.height = `${spanHours * 60 - 4}px`;
+    el.innerHTML = `
+      <div class="event-title">${title}</div>
+      <div class="event-detail">${startDate} — ${endDate}</div>
+    `;
+    cell.appendChild(el);
+
+    // Flash adjacent cells
+    for (let h = startHour; h < startHour + spanHours; h++) {
+      const adj = document.getElementById(`cell-${col}-${h}`);
+      if (adj) { adj.classList.add('flash'); setTimeout(() => adj.classList.remove('flash'), 800); }
+    }
+  }
+}
+
+// Toast notification
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// SSE connection
+function connectSSE() {
+  const serverBase = window.location.origin;
+  const es = new EventSource(`${serverBase}/events-stream`);
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+
+  es.onopen = () => {
+    dot.classList.add('connected');
+    txt.textContent = 'Listening for events';
+  };
+  es.onmessage = (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      if (data.type === 'tool_executed' && data.tool === 'createCalendarHold') {
+        const r = data.result?.event || data.result || {};
+        addEvent(r.title || 'New Event', r.startDate || '2026-04-21', r.endDate || '2026-04-25');
+        showToast(`✓ ${r.title || 'Event'} — ${r.startDate}`);
+      }
+    } catch (err) {
+      console.error('SSE parse error:', err);
+    }
+  };
+  es.onerror = () => {
+    dot.classList.remove('connected');
+    txt.textContent = 'Disconnected — retrying...';
+  };
+}
+
+// Also poll /events on load for any existing events
+async function loadExisting() {
+  try {
+    const resp = await fetch('/events');
+    const data = await resp.json();
+    (data.events || []).forEach(ev => {
+      addEvent(ev.title, ev.startDate, ev.endDate);
+    });
+  } catch (e) { /* ignore */ }
+}
+
+loadExisting();
+connectSSE();
+</script>
+</body>
+</html>
