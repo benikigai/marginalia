@@ -230,9 +230,10 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-// SSE connection
+// SSE connection (uses same server base as polling)
 function connectSSE() {
-  const serverBase = window.location.origin;
+  const serverParam = new URLSearchParams(window.location.search).get('server');
+  const serverBase = serverParam ? `http://${serverParam}` : window.location.origin;
   const es = new EventSource(`${serverBase}/events-stream`);
   const dot = document.getElementById('statusDot');
   const txt = document.getElementById('statusText');
@@ -259,19 +260,37 @@ function connectSSE() {
   };
 }
 
-// Also poll /events on load for any existing events
-async function loadExisting() {
+// Poll /events — works whether SSE is available or not
+let knownEventCount = 0;
+async function pollEvents() {
   try {
-    const resp = await fetch('/events');
+    const serverBase = new URLSearchParams(window.location.search).get('server');
+    const base = serverBase ? `http://${serverBase}` : window.location.origin;
+    const resp = await fetch(`${base}/events`);
     const data = await resp.json();
-    (data.events || []).forEach(ev => {
-      addEvent(ev.title, ev.startDate, ev.endDate);
-    });
-  } catch (e) { /* ignore */ }
+    const events = data.events || [];
+    if (events.length > knownEventCount) {
+      // New events — render only the new ones
+      for (let i = knownEventCount; i < events.length; i++) {
+        const ev = events[i];
+        addEvent(ev.title, ev.startDate, ev.endDate);
+        showToast(`\u2713 ${ev.title} — ${ev.startDate}`);
+      }
+      knownEventCount = events.length;
+    }
+    document.getElementById('statusDot').classList.add('connected');
+    document.getElementById('statusText').textContent = `Listening | ${events.length} event${events.length !== 1 ? 's' : ''}`;
+  } catch (e) {
+    document.getElementById('statusDot').classList.remove('connected');
+    document.getElementById('statusText').textContent = 'Disconnected — retrying...';
+  }
 }
 
-loadExisting();
-connectSSE();
+// Poll every 500ms for instant-feeling updates during demo
+pollEvents();
+setInterval(pollEvents, 500);
+// SSE as bonus if available
+try { connectSSE(); } catch (e) {}
 </script>
 </body>
 </html>
