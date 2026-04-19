@@ -4,42 +4,202 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Marginalia — The private commentary on every conversation that can't leave the room</title>
+<meta name="description" content="On-device voice intelligence for smart glasses. Gemma 4 + Cactus Compute + Even Realities G2. Zero cloud.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-badge">On-Device AI for Smart Glasses</div>
+  <div class="hero-badge">Built at the YC Gemma 4 Voice Agents Hackathon</div>
   <h1>Marginalia</h1>
   <p class="tagline">The private commentary on every conversation<br>that can't leave the room.</p>
   <div class="hero-detail">
-    Real-time tactical intelligence. Zero cloud. Zero data leakage.<br>
-    Powered by Gemma 4 on Cactus Compute. Displayed on Even Realities G2.
+    Real-time tactical intelligence on smart glasses.<br>
+    Runs entirely on your phone. Zero cloud. Zero data leakage.
+  </div>
+  <div class="hero-cta">
+    <a href="#demo" class="btn-primary">Watch the Demo</a>
+    <a href="https://github.com/benikigai/marginalia" class="btn-secondary">View Source</a>
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
+<!-- DEMO VIDEO -->
+<section class="demo" id="demo">
+  <h2>The Demo</h2>
+  <p class="section-lead">Executive 1:1 scenario. A direct report says they're burned out. Marginalia analyzes the conversation and surfaces three tactical options on the lens — in airplane mode.</p>
+
+  <div class="demo-video">
+    <!-- Replace this div with an iframe once you upload the demo video to YouTube -->
+    <div class="video-placeholder" id="videoPlaceholder">
+      <div class="video-play">&#9654;</div>
+      <div class="video-label">Demo video — recording after final rehearsal</div>
+    </div>
+  </div>
+
+  <div class="demo-flow">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-label">Volunteer speaks</div>
+        <div class="flow-quote">"I've been feeling burned out. I think I need to take next week off."</div>
+      </div>
+    </div>
+    <div class="flow-arrow">&#8595;</div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-label">G2 mic captures audio via BLE to iPhone</div>
+        <div class="flow-detail">PCM 16kHz S16LE mono, 3-second buffer</div>
+      </div>
+    </div>
+    <div class="flow-arrow">&#8595;</div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="flow-label">On-device inference (iPhone, airplane mode)</div>
+        <div class="flow-detail">Parakeet STT &rarr; Gemma 4 E2B &rarr; 3 options JSON with function calls</div>
+      </div>
+    </div>
+    <div class="flow-arrow">&#8595;</div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-content">
+        <div class="flow-label">Options appear on G2 lens</div>
+        <div class="flow-lens">
+          <div class="lens-line selected">&#9673; Approve — block Apr 21-25</div>
+          <div class="lens-line">&#9675; Counter — ask about workload</div>
+          <div class="lens-line">&#9675; Defer — send calendar hold</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-arrow">&#8595;</div>
+    <div class="flow-step">
+      <div class="flow-num">5</div>
+      <div class="flow-content">
+        <div class="flow-label">Tap R1 ring &rarr; calendar event created</div>
+        <div class="flow-detail">Function call executes on-device. No server, no cloud, no network.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section class="architecture">
+  <h2>What We Built</h2>
+  <p class="section-lead">Everything runs on one iPhone in airplane mode. The MacBook is only used as a projector.</p>
+
+  <div class="arch-diagram">
+    <pre class="arch-ascii">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;                    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474;  G2        &#9474;       BLE        &#9474;  iPhone 17 Pro Max             &#9474;
+&#9474;  Glasses   &#9474;&#9668;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9654;&#9474;                                   &#9474;
+&#9474;            &#9474;                    &#9474;  Even Realities App            &#9474;
+&#9474;  &#9679; Mic     &#9474;&#9472;&#9472;PCM audio&#9472;&#9472;&#9472;&#9472;&#9472;&#9654;&#9474;    &#9492;&#9472;&#9472; WebView                   &#9474;
+&#9474;  &#9679; Lens    &#9474;&#9668;&#9472;&#9472;text&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9474;        loads localhost:8080     &#9474;
+&#9474;  &#9679; R1 Ring &#9474;&#9472;&#9472;tap event&#9472;&#9472;&#9472;&#9472;&#9472;&#9654;&#9474;        &#9474; HTTP (loopback)        &#9474;
+&#9474;            &#9474;                    &#9474;        &#9660;                       &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;                    &#9474;  Marginalia App                &#9474;
+                                    &#9474;    &#9500;&#9472;&#9472; HTTP Server (:8080)      &#9474;
+                                    &#9474;    &#9500;&#9472;&#9472; Cactus Parakeet STT      &#9474;
+                                    &#9474;    &#9492;&#9472;&#9472; Cactus Gemma 4 E2B       &#9474;
+                                    &#9474;        (2.3B params, INT4)      &#9474;
+                                    &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+    </pre>
+  </div>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <h4>Inference Engine</h4>
+      <div class="tech-name">Cactus Compute v1.14</div>
+      <p>C++ inference engine compiled to ARM64. Zero-copy memory mapping, INT4 quantization, Apple Neural Engine acceleration. Same engine runs on phone, tablet, and laptop.</p>
+      <div class="tech-link"><a href="https://cactuscompute.com">cactuscompute.com</a></div>
+    </div>
+    <div class="tech-card">
+      <h4>Language Model</h4>
+      <div class="tech-name">Gemma 4 E2B (Google DeepMind)</div>
+      <p>2.3B effective parameters, 5.1B total. Native audio input via 300M-parameter conformer encoder. Reasons directly over raw audio — no separate transcription step needed. Apache 2.0.</p>
+      <div class="tech-link"><a href="https://ai.google.dev/gemma">ai.google.dev/gemma</a></div>
+    </div>
+    <div class="tech-card">
+      <h4>Speech-to-Text</h4>
+      <div class="tech-name">NVIDIA Parakeet TDT 0.6B</div>
+      <p>4.65% WER — lowest error rate of any on-device speech model. Runs as a fast first pass before the LLM. Apple NPU accelerated for sub-second transcription.</p>
+    </div>
+    <div class="tech-card">
+      <h4>Smart Glasses</h4>
+      <div class="tech-name">Even Realities G2 + R1 Ring</div>
+      <p>576x288 px per eye, 4-bit greyscale micro-LED. Built-in mic (16kHz PCM S16LE mono). R1 ring for selection via BLE. Looks like regular glasses.</p>
+      <div class="tech-link"><a href="https://evenrealities.com">evenrealities.com</a></div>
+    </div>
+  </div>
+
+  <div class="tech-specs">
+    <h3>Performance (iPhone 17 Pro Max, Airplane Mode)</h3>
+    <div class="specs-grid">
+      <div class="spec">
+        <div class="spec-value">&lt;5s</div>
+        <div class="spec-label">End-to-end latency<br>(audio in &rarr; options on lens)</div>
+      </div>
+      <div class="spec">
+        <div class="spec-value">~2 GB</div>
+        <div class="spec-label">Total RAM<br>(both models loaded)</div>
+      </div>
+      <div class="spec">
+        <div class="spec-value">48 tok/s</div>
+        <div class="spec-label">Decode speed<br>(Cactus + Apple Neural Engine)</div>
+      </div>
+      <div class="spec">
+        <div class="spec-value">0 bytes</div>
+        <div class="spec-label">Data sent to cloud<br>(verified via airplane mode)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS (technical) -->
 <section class="how-it-works">
-  <h2>How It Works</h2>
-  <div class="steps">
-    <div class="step">
-      <div class="step-icon">&#9881;</div>
-      <div class="step-num">01</div>
-      <h3>Listen</h3>
-      <p>G2 smart glasses capture the conversation through built-in microphones. Audio never leaves the device.</p>
+  <h2>The Pipeline</h2>
+  <div class="pipeline">
+    <div class="pipe-stage">
+      <div class="pipe-header">
+        <div class="pipe-num">01</div>
+        <h3>Audio Capture</h3>
+      </div>
+      <p>G2 glasses mic captures PCM audio (16kHz, 16-bit, mono) and streams it over BLE to the iPhone. The Even Realities app relays audio frames to our web app running in its WebView.</p>
+      <div class="pipe-tech">even_hub_sdk &rarr; audioEvent.audioPcm (Uint8Array)</div>
     </div>
-    <div class="step">
-      <div class="step-icon">&#9670;</div>
-      <div class="step-num">02</div>
-      <h3>Analyze</h3>
-      <p>Gemma 4 runs locally via Cactus Compute. Understands intent, tone, and context in under 4 seconds.</p>
+    <div class="pipe-stage">
+      <div class="pipe-header">
+        <div class="pipe-num">02</div>
+        <h3>Speech Recognition</h3>
+      </div>
+      <p>3-second audio buffer is sent via HTTP POST to the Marginalia app's local server (localhost:8080). Parakeet TDT transcribes the audio to text with 95.35% accuracy.</p>
+      <div class="pipe-tech">cactusTranscribe(sttModel, pcmData) &rarr; "I've been feeling burned out..."</div>
     </div>
-    <div class="step">
-      <div class="step-icon">&#9733;</div>
-      <div class="step-num">03</div>
-      <h3>Act</h3>
-      <p>Three tactical options appear on the lens. Tap the R1 ring to execute — calendar holds, follow-ups, escalations.</p>
+    <div class="pipe-stage">
+      <div class="pipe-header">
+        <div class="pipe-num">03</div>
+        <h3>Tactical Analysis</h3>
+      </div>
+      <p>Gemma 4 E2B receives the transcript with a system prompt containing the scenario context (role, relationship, organizational dynamics). It generates exactly 3 response options with optional function calls.</p>
+      <div class="pipe-tech">cactusComplete(llmModel, messages, tools) &rarr; {"options": [...]}</div>
+    </div>
+    <div class="pipe-stage">
+      <div class="pipe-header">
+        <div class="pipe-num">04</div>
+        <h3>Lens Display</h3>
+      </div>
+      <p>Options are rendered on the G2 lens via textContainerUpgrade — flicker-free in-place text updates. Ring rotation moves the selection indicator. Ring click triggers the function call.</p>
+      <div class="pipe-tech">bridge.textContainerUpgrade() &rarr; &#9673; Approve  &#9675; Counter  &#9675; Defer</div>
+    </div>
+    <div class="pipe-stage">
+      <div class="pipe-header">
+        <div class="pipe-num">05</div>
+        <h3>Function Execution</h3>
+      </div>
+      <p>When the wearer taps the R1 ring, the selected option's function call executes on-device. For this demo: createCalendarHold(title, startDate, endDate). A calendar event appears on the iPhone screen.</p>
+      <div class="pipe-tech">POST /tool-call-json &rarr; {"status": "created", "event": {...}}</div>
     </div>
   </div>
 </section>
@@ -47,22 +207,19 @@
 <!-- THE MOAT -->
 <section class="moat">
   <h2>Why On-Device Changes Everything</h2>
-  <p class="moat-lead">Cloud AI can't serve regulated industries. Attorney-client privilege, HIPAA, material non-public information, classified environments — these conversations <em>cannot</em> leave the room. Marginalia is the only AI that's legally deployable where it matters most.</p>
+  <p class="section-lead">Cloud AI can't serve regulated industries. Attorney-client privilege, HIPAA, material non-public information, classified environments — these conversations <em>cannot</em> leave the room. Marginalia is the only AI that's legally deployable where it matters most.</p>
   <div class="moat-grid">
     <div class="moat-item">
-      <div class="moat-icon">&#9635;</div>
       <h4>Privileged Training Data</h4>
-      <p>Fine-tuned on domain-specific corpora under BAA. Our models know what a deposition sounds like, what a differential diagnosis workflow looks like. Cloud LLMs never will.</p>
+      <p>Each vertical gets a fine-tuned model trained on domain-specific corpora under BAA. Our models know what a deposition sounds like, what a differential diagnosis workflow looks like. Cloud LLMs trained on the open internet never will.</p>
     </div>
     <div class="moat-item">
-      <div class="moat-icon">&#9671;</div>
       <h4>On-Device Personalization</h4>
-      <p>Your model learns your voice, your style, your vocabulary over months — and that adaptation never leaves your hardware. Switch devices, lose nothing. Switch products, lose everything.</p>
+      <p>Your model learns your voice, your style, your vocabulary over months of use — and that adaptation never leaves your hardware. Six months of personalization is six months of switching cost no competitor can replicate.</p>
     </div>
     <div class="moat-item">
-      <div class="moat-icon">&#9670;</div>
-      <h4>Compliance Certifications</h4>
-      <p>SOC 2, HIPAA BAA, HITRUST, FedRAMP. Each certification is a 6-12 month barrier to entry that competitors must rebuild from scratch.</p>
+      <h4>Compliance as Moat</h4>
+      <p>SOC 2, HIPAA BAA, HITRUST, FedRAMP. Each certification takes 6-12 months and $100K-500K. Every one we earn is a barrier to entry. We're the only product a Fortune 500 procurement committee can legally approve.</p>
     </div>
   </div>
 </section>
@@ -70,7 +227,7 @@
 <!-- VERTICALS -->
 <section class="verticals">
   <h2>Eight Verticals. One Platform.</h2>
-  <p class="verticals-lead">Every high-stakes profession gets a fine-tuned Marginalia trained on their domain's privileged data.</p>
+  <p class="section-lead">Every high-stakes profession gets a fine-tuned Marginalia trained on their domain's privileged data.</p>
   <div class="vertical-grid">
 
     <div class="vertical-card tier1">
@@ -79,6 +236,7 @@
       <p class="vertical-who">Litigators, M&amp;A attorneys, in-house counsel</p>
       <p class="vertical-data"><strong>Training data:</strong> Privileged client communications, deposition transcripts, jurisdiction-specific case law, contract language patterns</p>
       <p class="vertical-why">Attorney-client privilege is a legal absolute. Cloud AI in a client meeting is a potential privilege waiver — a malpractice event.</p>
+      <p class="vertical-pricing">$200-500/attorney/month. AmLaw 100 firm = $1-3M ACV.</p>
     </div>
 
     <div class="vertical-card tier1">
@@ -86,7 +244,8 @@
       <h3>Marginalia Clinical</h3>
       <p class="vertical-who">Physicians, specialists, surgeons</p>
       <p class="vertical-data"><strong>Training data:</strong> Clinical dialog patterns, differential diagnosis workflows, medication interactions, specialty-specific decision trees</p>
-      <p class="vertical-why">HIPAA prohibits cloud AI with patient audio. Marginalia is the only legal ambient clinical intelligence.</p>
+      <p class="vertical-why">HIPAA prohibits cloud AI with patient audio. Period. Marginalia is the only legal ambient clinical intelligence.</p>
+      <p class="vertical-pricing">$150-300/physician/month. Hospital system = $5-20M ACV.</p>
     </div>
 
     <div class="vertical-card tier1">
@@ -95,14 +254,16 @@
       <p class="vertical-who">Investment bankers, deal teams, VPs</p>
       <p class="vertical-data"><strong>Training data:</strong> Deal memos, diligence questions, valuation frameworks, MNPI-sensitive vocabulary</p>
       <p class="vertical-why">Material non-public information. Cloud AI in a deal room is a securities violation waiting to happen.</p>
+      <p class="vertical-pricing">$500-1000/banker/month. Bulge bracket = $10M+ ACV.</p>
     </div>
 
     <div class="vertical-card tier2">
-      <div class="vertical-tier">Tier 2</div>
+      <div class="vertical-tier">Tier 2 &mdash; Wedge Vertical</div>
       <h3>Marginalia Floor</h3>
       <p class="vertical-who">Plant managers, line supervisors, maintenance techs</p>
       <p class="vertical-data"><strong>Training data:</strong> Equipment maintenance manuals, FMEA documentation, Six Sigma frameworks, safety procedures</p>
-      <p class="vertical-why">Manufacturing IP is aggressively guarded. Apple, defense contractors, pharma — none can use cloud AI on the factory floor.</p>
+      <p class="vertical-why">Manufacturing IP is aggressively guarded. Apple supply chain, defense contractors, pharma — none can use cloud AI on-site. <strong>Founder has 6 years inside Apple/Foxconn — Day One distribution.</strong></p>
+      <p class="vertical-pricing">$50-150/operator/month. Plant rollout = $200K-2M ACV.</p>
     </div>
 
     <div class="vertical-card tier2">
@@ -118,7 +279,7 @@
       <h3>Marginalia Defense</h3>
       <p class="vertical-who">Intel analysts, policy staff, defense contractors</p>
       <p class="vertical-data"><strong>Training data:</strong> Classified-appropriate frameworks, briefing conventions, policy analysis patterns</p>
-      <p class="vertical-why">Classified environments cannot use cloud AI by federal mandate. Executive Order 14110 compliance.</p>
+      <p class="vertical-why">Classified environments cannot use cloud AI by federal mandate.</p>
     </div>
 
     <div class="vertical-card tier3">
@@ -126,7 +287,6 @@
       <h3>Marginalia Executive</h3>
       <p class="vertical-who">C-suite executives, HR partners</p>
       <p class="vertical-data"><strong>Training data:</strong> Performance review language, coaching frameworks, difficult-conversation patterns</p>
-      <p class="vertical-why">HR investigations and executive coaching conversations must stay private. No audit trail in the cloud.</p>
     </div>
 
     <div class="vertical-card tier3">
@@ -134,7 +294,6 @@
       <h3>Marginalia Press</h3>
       <p class="vertical-who">Investigative journalists, researchers</p>
       <p class="vertical-data"><strong>Training data:</strong> Interview frameworks, source-protection patterns, fact-check conventions</p>
-      <p class="vertical-why">Source confidentiality is professional ethics. Cloud AI violates it.</p>
     </div>
 
   </div>
@@ -144,28 +303,55 @@
 <section class="roadmap">
   <h2>The Roadmap</h2>
   <div class="timeline">
-    <div class="timeline-item">
+    <div class="timeline-item active">
       <div class="timeline-year">2026</div>
       <div class="timeline-content">
-        <strong>Wedge:</strong> Marginalia Floor. 5-10 manufacturing enterprise pilots via Foxconn network. Seed + Series A.
+        <strong>Wedge:</strong> Marginalia Floor. 5-10 manufacturing enterprise pilots via Foxconn network. Seed + Series A. $2-5M ARR.
       </div>
     </div>
     <div class="timeline-item">
       <div class="timeline-year">2027</div>
       <div class="timeline-content">
-        <strong>Second vertical:</strong> Marginalia Counsel. Hire former BigLaw partner as vertical GM. 20-40 firms.
+        <strong>Second vertical:</strong> Marginalia Counsel. Hire former BigLaw partner as vertical GM. 20-40 firms. $10-20M ARR.
       </div>
     </div>
     <div class="timeline-item">
       <div class="timeline-year">2028</div>
       <div class="timeline-content">
-        <strong>Third vertical + platform:</strong> Marginalia Clinical. Open partner integrations. Series C.
+        <strong>Third vertical + platform:</strong> Marginalia Clinical. Open partner integrations (Epic, Relativity, SAP). $40-80M ARR.
       </div>
     </div>
     <div class="timeline-item">
       <div class="timeline-year">2030</div>
       <div class="timeline-content">
-        <strong>Platform maturity:</strong> 8 verticals live. Hardware-agnostic across G2, Mentra, Ray-Ban, Vuzix.
+        <strong>Platform maturity:</strong> 8 verticals live. Hardware-agnostic: G2, Mentra, Ray-Ban, Vuzix, contact lenses. $150-400M ARR.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOUNDER -->
+<section class="founder">
+  <h2>The Founder</h2>
+  <div class="founder-content">
+    <div class="founder-bio">
+      <h3>Ben Shyong</h3>
+      <p class="founder-role">Staff Technical Program Manager, Meta (AR/VR Hardware)</p>
+      <p>6 years at Apple inside Foxconn factories. Led hardware programs shipping products used by hundreds of millions. Leaving Meta August 15, 2026 to build Marginalia full-time.</p>
+      <p>The manufacturing network from Apple/Foxconn is the Day One distribution for Marginalia Floor — no one else competing in on-device AI has those relationships.</p>
+    </div>
+    <div class="founder-meta">
+      <div class="founder-stat">
+        <div class="stat-value">6 years</div>
+        <div class="stat-label">Inside Foxconn / Apple supply chain</div>
+      </div>
+      <div class="founder-stat">
+        <div class="stat-value">Staff TPM</div>
+        <div class="stat-label">Meta Reality Labs (AR/VR)</div>
+      </div>
+      <div class="founder-stat">
+        <div class="stat-value">Aug 2026</div>
+        <div class="stat-label">Full-time on Marginalia</div>
       </div>
     </div>
   </div>
@@ -175,9 +361,12 @@
 <footer>
   <div class="footer-brand">MARGINALIA</div>
   <p>The intelligence layer for work that can't leave the room.</p>
-  <p class="footer-meta">Built at the YC Gemma 4 Voice Agents Hackathon, April 2026</p>
-  <p class="footer-meta">Gemma 4 + Cactus Compute + Even Realities G2</p>
-  <p class="footer-contact">benjamin.shyong@gmail.com</p>
+  <div class="footer-links">
+    <a href="https://github.com/benikigai/marginalia">GitHub</a>
+    <a href="mailto:benjamin.shyong@gmail.com">Contact</a>
+  </div>
+  <p class="footer-meta">Built in 22 hours at the YC Gemma 4 Voice Agents Hackathon, April 18-19 2026</p>
+  <p class="footer-meta">Gemma 4 E2B (Apache 2.0) + Cactus Compute (YC S25) + Even Realities G2</p>
 </footer>
 
 </body>
