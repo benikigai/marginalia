@@ -18,7 +18,12 @@ function getServerUrl(): string {
     const params = new URLSearchParams(window.location.search)
     const server = params.get('server')
     if (server) return `http://${server}`
+    // If loaded from localhost (iPhone local server), use same origin
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return window.location.origin
+    }
   }
+  // Fallback for hotspot mode (MacBook as server)
   return 'http://172.20.10.2:8080'
 }
 const SERVER_URL = getServerUrl()
@@ -147,17 +152,11 @@ async function sendAudioForInference(pcmBuffer: Uint8Array): Promise<void> {
   await updateDisplay('MARGINALIA\n\nProcessing...')
 
   try {
-    // Send as base64 JSON payload
-    const base64 = uint8ArrayToBase64(pcmBuffer)
-    const response = await fetch(`${SERVER_URL}/inference-json`, {
+    // Send as raw binary PCM (matches iOS local server)
+    const response = await fetch(`${SERVER_URL}/inference`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        audio: base64,
-        sampleRate: 16000,
-        channels: 1,
-        bitsPerSample: 16,
-      }),
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: pcmBuffer as unknown as BodyInit,
     })
 
     if (!response.ok) {
@@ -201,7 +200,7 @@ async function executeToolCall(option: Option): Promise<void> {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        tool: option.action,
+        action: option.action,
         args: option.args,
       }),
     })
@@ -311,15 +310,6 @@ function handleOptionsEvent(eventType: OsEventTypeList | undefined): void {
     log(`Selection moved to ${selectedIndex}`)
     return
   }
-}
-
-// ─── Utilities ──────────────────────────────────────────────
-function uint8ArrayToBase64(bytes: Uint8Array): string {
-  let binary = ''
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i])
-  }
-  return btoa(binary)
 }
 
 // ─── Bootstrap ──────────────────────────────────────────────

@@ -28,10 +28,10 @@ So this weekend I built Marginalia — the private commentary on every conversat
 
 "First — airplane mode. Watch."
 
-> *Toggle iPhone airplane mode visibly (cellular OFF, hotspot stays ON).*
-> *Show Little Snitch or nettop on MacBook: zero outbound bytes.*
+> *Hold up iPhone. Toggle airplane mode ON — visibly, so audience sees the toggle.*
+> *AirPlay mirror iPhone screen to projector so audience sees the Marginalia app status.*
 
-"Zero bytes leaving this network. Everything you're about to see runs right here."
+"Airplane mode. No WiFi, no cellular, no cloud. Everything runs on this phone."
 
 ### 2B: The Conversation (30 seconds)
 
@@ -46,9 +46,10 @@ So this weekend I built Marginalia — the private commentary on every conversat
 
 ### 2C: Options Appear (15 seconds)
 
-> *Point to the projected G2 lens preview or tilt glasses toward camera.*
+> *The iPhone app shows the inference completing. The G2 lens shows the 3 options.*
+> *AirPlay mirrors the phone screen to the projector — audience sees what you see.*
 
-"Gemma 4 just analyzed that in [X] seconds. On-device. Three options:"
+"Gemma 4 just analyzed that — on this phone, in airplane mode — in [X] seconds. Three options:"
 
 > *Read aloud from the lens:*
 > "Approve — block the calendar. Counter — ask about workload. Defer — send a calendar hold."
@@ -59,9 +60,9 @@ So this weekend I built Marginalia — the private commentary on every conversat
 
 "I'm going to approve."
 
-> *Tap R1 ring. Calendar projection on MacBook shows the event appear.*
+> *Tap R1 ring. iPhone app shows the calendar event appear. Audience sees it on the projector.*
 
-"Calendar hold. Done. My direct report doesn't know I just got tactical guidance. The conversation stays natural. The AI stayed in the margin."
+"Calendar hold. Done. All on the phone. No MacBook, no server, no cloud. My direct report doesn't know I just got tactical guidance. The conversation stays natural. The AI stayed in the margin."
 
 ### 2E: The Line (15 seconds)
 
@@ -115,9 +116,10 @@ I want a YC interview.
 | 4:45 | 4:45 | Done |
 
 ## Fallbacks (memorize these)
-- **G2 audio fails:** Use MacBook mic. Say: "For audio clarity in this room, I'm using the laptop mic — the glasses mic works the same way."
-- **Inference slow (>6s):** Fill with: "On an M4 Max, this takes about [X] seconds. On iPhone 17, it's faster with the Neural Engine."
-- **Inference fails:** Server is in dummy mode. Pre-loaded response appears. Don't mention it.
-- **Ring doesn't work:** Tap temple of glasses instead. Or say: "I'm tapping to select option 1" and click on MacBook.
+- **G2 audio fails:** Say: "Let me speak directly to the phone mic." Hold iPhone near volunteer. Same inference runs.
+- **Inference slow (>6s):** Fill with: "Gemma 4 is reasoning over the audio — tone, intent, context — in real time on this phone."
+- **Inference fails:** App has dummy mode. Pre-loaded response appears. Don't mention it.
+- **Ring doesn't work:** Tap temple of glasses instead. Or say: "I'm tapping to select option 1."
 - **Volunteer flubs the line:** Repeat it yourself: "Let me paraphrase what they said: 'I'm burned out and need next week off.'"
-- **Calendar doesn't appear:** Say: "The calendar hold is created — you'd see it on your phone notification." Move on.
+- **Calendar doesn't appear on projector:** Say: "The calendar hold is created — you'd see it on the phone notification." Show iPhone screen.
+- **AirPlay mirror drops:** Hold iPhone up so audience can see the screen directly. You're close to them at YC HQ.
