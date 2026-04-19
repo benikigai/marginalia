@@ -132,11 +132,13 @@ class G2BluetoothManager: NSObject, ObservableObject {
     }
 
     func connect(pairKey: String) {
-        guard let pair = discoveredPairs[pairKey], pair.isComplete,
-              let left = pair.left, let right = pair.right else {
-            lastError = "Pair not complete"
+        guard let pair = discoveredPairs[pairKey] else {
+            lastError = "Pair not found"
+            print("[G2] ERROR: No pair for key \(pairKey)")
             return
         }
+
+        print("[G2] Pair status — L: \(pair.leftName ?? "nil") R: \(pair.rightName ?? "nil") complete: \(pair.isComplete)")
 
         stopScan()
         connectingPairKey = pairKey
@@ -146,9 +148,20 @@ class G2BluetoothManager: NSObject, ObservableObject {
         leftServicesDiscovered = false
         rightServicesDiscovered = false
 
-        centralManager.connect(left, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey: true])
-        centralManager.connect(right, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey: true])
-        print("[G2] Connecting to pair \(pairKey)...")
+        // Connect whichever arms we found (don't require both)
+        if let left = pair.left {
+            centralManager.connect(left, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey: true])
+            print("[G2] Connecting left: \(pair.leftName ?? "?")")
+        }
+        if let right = pair.right {
+            centralManager.connect(right, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey: true])
+            print("[G2] Connecting right: \(pair.rightName ?? "?")")
+        }
+
+        if pair.left == nil && pair.right == nil {
+            lastError = "No peripherals to connect"
+            connectionState = .error
+        }
     }
 
     func disconnect() {
@@ -496,25 +509,35 @@ extension G2BluetoothManager: CBCentralManagerDelegate {
     }
 
     private func checkBothReady() {
-        if leftServicesDiscovered && rightServicesDiscovered {
-            if leftWriteChar != nil || leftUartTX != nil {
-                // Got characteristics — authenticate
-                if usingUART {
-                    // UART mode: send init command, skip full auth
-                    let initCmd = Data([0x4D, 0x01])
-                    writeToLeft(initCmd)
-                    writeToRight(initCmd)
-                    isAuthenticated = true
-                    connectionState = .ready
-                    startHeartbeat()
-                    print("[G2] UART mode — initialized, ready")
-                } else {
-                    authenticate()
-                }
+        // Proceed when at least one side has discovered services
+        // Don't wait for both if only one arm was found
+        let pair = discoveredPairs[connectingPairKey ?? ""]
+        let needLeft = pair?.left != nil
+        let needRight = pair?.right != nil
+        let leftDone = !needLeft || leftServicesDiscovered
+        let rightDone = !needRight || rightServicesDiscovered
+
+        guard leftDone && rightDone else { return }
+
+        print("[G2] Services discovered — L:\(leftServicesDiscovered) R:\(rightServicesDiscovered)")
+        print("[G2] Write chars — g2L:\(leftWriteChar != nil) g2R:\(rightWriteChar != nil) uartL:\(leftUartTX != nil) uartR:\(rightUartTX != nil)")
+
+        if leftWriteChar != nil || rightWriteChar != nil || leftUartTX != nil || rightUartTX != nil {
+            if usingUART {
+                let initCmd = Data([0x4D, 0x01])
+                writeToLeft(initCmd)
+                writeToRight(initCmd)
+                isAuthenticated = true
+                connectionState = .ready
+                startHeartbeat()
+                print("[G2] UART mode — initialized, ready")
             } else {
-                lastError = "No write characteristics found"
-                connectionState = .error
+                authenticate()
             }
+        } else {
+            lastError = "No write characteristics found on any arm"
+            connectionState = .error
+            print("[G2] ERROR: No writable characteristics discovered")
         }
     }
 }

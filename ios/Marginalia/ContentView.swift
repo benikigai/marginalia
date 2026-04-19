@@ -395,19 +395,28 @@ struct DebugToolsSection: View {
                         }
 
                         ForEach(Array(g2.discoveredPairs.keys.sorted()), id: \.self) { key in
-                            if let pair = g2.discoveredPairs[key], pair.isComplete {
+                            if let pair = g2.discoveredPairs[key] {
                                 Button(action: { g2.connect(pairKey: key) }) {
                                     HStack {
                                         Image(systemName: "eyeglasses")
                                         VStack(alignment: .leading) {
                                             Text(key)
                                                 .font(.system(size: 13, weight: .medium))
-                                            Text("L: \(pair.leftName ?? "?") | R: \(pair.rightName ?? "?")")
-                                                .font(.system(size: 10))
-                                                .foregroundColor(.secondary)
+                                            HStack(spacing: 4) {
+                                                Text("L: \(pair.left != nil ? "✓" : "—")")
+                                                Text("R: \(pair.right != nil ? "✓" : "—")")
+                                            }
+                                            .font(.system(size: 10, design: .monospaced))
+                                            .foregroundColor(.secondary)
                                         }
                                         Spacer()
-                                        Image(systemName: "arrow.right.circle")
+                                        if pair.isComplete {
+                                            Image(systemName: "arrow.right.circle.fill")
+                                                .foregroundColor(.green)
+                                        } else {
+                                            Image(systemName: "arrow.right.circle")
+                                                .foregroundColor(.orange)
+                                        }
                                     }
                                 }
                                 .buttonStyle(.bordered)
