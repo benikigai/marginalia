@@ -1,0 +1,145 @@
+# Marginalia --- Submission Video Plan
+
+**Target: 2-3 minutes. No longer. Judges watch dozens of these.**
+
+Record on iPhone screen recording + face cam, or have someone film you wearing the glasses while iPhone screen is visible. Edit in iMovie or just do one clean take.
+
+---
+
+## Structure: Show, Don't Pitch
+
+The video is NOT the live demo. The live demo has stage presence, volunteer, audience reaction. The video is proof that the thing works. Judges watch this to verify your demo wasn't faked.
+
+**Priority order:**
+1. Show it working (inference on phone, airplane mode)
+2. Show the glasses (text on lens)
+3. Explain what it is (30 seconds max)
+4. Explain why it matters (15 seconds max)
+
+---
+
+## Shot List
+
+### Shot 1: The Hook (10 seconds)
+- Camera on you wearing G2 glasses
+- "This is Marginalia. On-device voice AI for smart glasses. Everything runs on this phone in airplane mode."
+- Hold up iPhone showing Marginalia app
+
+### Shot 2: Airplane Mode Proof (10 seconds)
+- iPhone screen recording: Control Center pull-down
+- Toggle airplane mode ON
+- Show WiFi off, Cellular off, Bluetooth still on
+- "No internet. No cloud. Just Cactus and Gemma 4 running locally."
+
+### Shot 3: Model Loading (10 seconds)
+- Show Marginalia app Dashboard tab
+- Models loaded: Parakeet STT ready, Gemma 4 E2B ready
+- Show RAM usage
+- "Two models loaded --- Parakeet for speech recognition, Gemma 4 for reasoning. About 2 gigs of RAM."
+
+### Shot 4: Chat Test (20 seconds)
+- Switch to Chat tab
+- Type: "What is the capital of France?"
+- Gemma responds with the answer
+- Show latency (Xms)
+- "Raw Gemma 4 inference. On the phone. [X] milliseconds."
+
+### Shot 5: The Demo Scenario (40 seconds)
+- Switch to Dashboard tab
+- Type in the test input field: "I've been feeling burned out. I think I need to take next week off."
+- Hit "Generate Options"
+- Show the 3 options appearing:
+  - Approve --- block calendar
+  - Counter --- ask about workload  
+  - Defer --- send calendar hold
+- "I type what someone said. Gemma generates three tactical response options with function calls. All on-device."
+- Show inference time
+
+### Shot 6: Glasses Display (20 seconds)
+**If G2 BLE is working:**
+- Show G2 lens with options displayed
+- "These options appear on the glasses lens. The other person never sees them."
+- Show ring tap selecting an option
+- "Tap the ring. Calendar event created."
+
+**If G2 BLE is NOT working:**
+- Show iPhone app's G2 Lens Mirror section with the formatted options
+- "In the shipping product, these appear on the smart glasses lens via Bluetooth. Here's what the wearer sees."
+- Show the glyphs: ◉ Approve  ○ Counter  ○ Defer
+
+### Shot 7: Calendar Event (10 seconds)
+- Show the calendar projection page or the app showing the event was created
+- "Function call executed. Calendar hold created. All local."
+
+### Shot 8: The Company (20 seconds)
+- Show usemarginalia.com on the phone browser (or cut to the website)
+- "Marginalia is eight products. Every regulated profession gets a fine-tuned model trained on privileged data that cloud AI will never have."
+- Quick scroll through the verticals: Counsel, Clinical, Diligence, Floor
+- "The intelligence layer for work that can't leave the room."
+
+### Shot 9: Close (5 seconds)
+- Back to you wearing the glasses
+- "Built solo in 22 hours. usemarginalia.com."
+- Cut.
+
+---
+
+## Recording Tips
+
+**DO:**
+- Record in landscape (16:9)
+- Use iPhone screen recording for all app shots (Settings → Control Center → Screen Recording)
+- Speak clearly, not fast
+- Show the actual inference happening --- don't cut away during loading
+- If inference takes 5 seconds, let those 5 seconds play. The audience needs to see it's real.
+- Show the airplane mode toggle BEFORE any inference
+
+**DON'T:**
+- Don't add music (judges mute it)
+- Don't add fancy transitions (waste of time)
+- Don't explain how Cactus works (they know, it's their hackathon)
+- Don't spend more than 20 seconds on the company vision
+- Don't apologize for anything not working
+
+**If you have someone to film:**
+- Have them film you wearing glasses + holding phone
+- You narrate while they capture both the phone screen and your face
+- Best angle: over-the-shoulder showing phone screen + glasses on your face
+
+**If solo recording:**
+- iPhone screen recording for all app demos
+- Front camera selfie for the open and close
+- Splice in iMovie (2 cuts total: selfie open → screen recording → selfie close)
+
+---
+
+## Quick One-Take Script (if no time to edit)
+
+Start iPhone screen recording. Open Marginalia app.
+
+> "Marginalia. On-device voice AI for smart glasses. Built in 22 hours at the YC Gemma 4 hackathon.
+> 
+> Let me show you. First --- airplane mode. [toggle] No cloud.
+> 
+> Models are loaded. Parakeet for speech, Gemma 4 for reasoning. Both running on this iPhone.
+> 
+> [type the volunteer line, hit Generate]
+> 
+> Three options. Approve, Counter, Defer. Each with a function call. All generated by Gemma 4, on this phone, in airplane mode.
+> 
+> [tap an option, show calendar event]
+> 
+> The company is eight verticals. Law, medicine, M&A, manufacturing. Every one trained on privileged data that cloud AI can't touch.
+> 
+> usemarginalia.com. Thank you."
+
+**That's 60-90 seconds. Clean. Sufficient.**
+
+---
+
+## Upload
+
+- YouTube unlisted
+- Title: "Marginalia --- YC Gemma 4 Voice Agents Hackathon 2026"
+- Description: "On-device voice intelligence for smart glasses. Gemma 4 + Cactus Compute + Even Realities G2. Zero cloud. http://usemarginalia.com | https://github.com/benikigai/marginalia"
+- Paste the URL into the submission form
