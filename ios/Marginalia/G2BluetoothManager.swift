@@ -487,8 +487,9 @@ extension G2BluetoothManager: CBCentralManagerDelegate {
                 rightConnected = true
             }
 
-            // Discover all services to find whichever protocol this firmware supports
-            peripheral.discoverServices(nil)
+            // Discover ONLY the Nordic UART service — this is what the G2 firmware exposes
+            // (discovering all services can miss UART on some firmware versions)
+            peripheral.discoverServices([uartServiceUUID])
             print("[G2] \(isLeft ? "Left" : "Right") connected, discovering services...")
 
             checkBothReady()
@@ -524,22 +525,23 @@ extension G2BluetoothManager: CBCentralManagerDelegate {
         print("[G2] Services discovered — L:\(leftServicesDiscovered) R:\(rightServicesDiscovered)")
         print("[G2] Write chars — g2L:\(leftWriteChar != nil) g2R:\(rightWriteChar != nil) uartL:\(leftUartTX != nil) uartR:\(rightUartTX != nil)")
 
-        if leftWriteChar != nil || rightWriteChar != nil || leftUartTX != nil || rightUartTX != nil {
-            if usingUART {
-                let initCmd = Data([0x4D, 0x01])
-                writeToLeft(initCmd)
-                writeToRight(initCmd)
-                isAuthenticated = true
-                connectionState = .ready
-                startHeartbeat()
-                print("[G2] UART mode — initialized, ready")
-            } else {
-                authenticate()
-            }
+        // Prefer UART (the protocol the Even app actually uses)
+        if leftUartTX != nil || rightUartTX != nil {
+            usingUART = true
+            let initCmd = Data([0x4D, 0x01])
+            writeToLeft(initCmd)
+            writeToRight(initCmd)
+            isAuthenticated = true
+            connectionState = .ready
+            startHeartbeat()
+            print("[G2] UART mode — initialized, ready")
+        } else if leftWriteChar != nil || rightWriteChar != nil {
+            authenticate()
         } else {
-            lastError = "No write characteristics found on any arm"
+            lastError = "No write characteristics found — force-close Even app and retry"
             connectionState = .error
             print("[G2] ERROR: No writable characteristics discovered")
+            print("[G2] TIP: Force-close the Even Realities app, then scan again")
         }
     }
 }
