@@ -15,6 +15,7 @@
 		A1000006 /* cactus.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1000006; };
 		A1000007 /* cactus.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B1000006; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A1000008 /* WebApp in Resources */ = {isa = PBXBuildFile; fileRef = B1000008; };
+		A1000009 /* ModelDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000B; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -42,6 +43,7 @@
 		B1000008 /* WebApp */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebApp; sourceTree = "<group>"; };
 		B1000009 /* cactus_ffi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cactus_ffi.h; sourceTree = "<group>"; };
 		B100000A /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
+		B100000B /* ModelDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloader.swift; sourceTree = "<group>"; };
 		D1000001 /* Marginalia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Marginalia.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -73,6 +75,7 @@
 				B1000002 /* ContentView.swift */,
 				B1000003 /* InferenceEngine.swift */,
 				B1000004 /* LocalServer.swift */,
+				B100000B /* ModelDownloader.swift */,
 				B1000007 /* Info.plist */,
 				B1000008 /* WebApp */,
 				F1000003 /* Cactus */,
@@ -168,6 +171,7 @@
 				A1000003 /* InferenceEngine.swift in Sources */,
 				A1000004 /* LocalServer.swift in Sources */,
 				A1000005 /* Cactus.swift in Sources */,
+				A1000009 /* ModelDownloader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
