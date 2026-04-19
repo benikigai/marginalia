@@ -113,10 +113,11 @@ class G2BluetoothManager: NSObject, ObservableObject {
         centralManager.scanForPeripherals(withServices: nil, options: [
             CBCentralManagerScanOptionAllowDuplicatesKey: false
         ])
-        print("[G2] Scanning for glasses...")
+        print("[G2] Scanning for glasses... (force-close Even app first if glasses are paired)")
+        print("[G2] Looking for devices with 'Even', 'G2', '_L_', or '_R_' in name")
 
-        // Auto-stop scan after 10s
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
+        // Auto-stop scan after 15s
+        DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in
             if self?.connectionState == .scanning {
                 self?.stopScan()
             }
@@ -420,11 +421,20 @@ extension G2BluetoothManager: CBCentralManagerDelegate {
     nonisolated func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
                                     advertisementData: [String: Any], rssi RSSI: NSNumber) {
         Task { @MainActor in
-            guard let name = peripheral.name, name.contains("G2") || name.contains("Even") else { return }
+            let name = peripheral.name ?? "(no name)"
+
+            // Log ALL devices with "Even" or "G2" anywhere, plus any device with signal > -70 dBm
+            if name.lowercased().contains("even") || name.lowercased().contains("g2") || name.contains("_L_") || name.contains("_R_") {
+                print("[G2] Found: \"\(name)\" RSSI=\(RSSI) id=\(peripheral.identifier.uuidString.prefix(8))")
+            }
+
+            // Accept: "Even G2_XX_L_YYYY", "Even G2_XX_R_YYYY", or anything with _L_ / _R_ and "Even"/"G2"
             guard name.contains("_L_") || name.contains("_R_") else { return }
+            guard name.lowercased().contains("even") || name.lowercased().contains("g2") else { return }
 
             let parts = name.components(separatedBy: "_")
-            guard parts.count > 1, let channel = parts.count > 1 ? parts[1] : nil else { return }
+            guard parts.count > 1 else { return }
+            let channel = parts[1]
 
             let pairKey = channel
 
