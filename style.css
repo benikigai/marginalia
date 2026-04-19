@@ -643,6 +643,25 @@ footer > p {
   margin-bottom: 4px;
 }
 
+/* APP SCREENSHOTS */
+.app-screenshots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 40px 0;
+}
+.screenshot {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.screenshot img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .hero h1 { font-size: 40px; letter-spacing: 6px; }
