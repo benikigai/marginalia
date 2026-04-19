@@ -1,0 +1,7 @@
+{
+  "name": "Marginalia",
+  "version": "1.0.0",
+  "description": "Private commentary for every conversation that can't leave the room",
+  "icon": "",
+  "entry": "index.html"
+}

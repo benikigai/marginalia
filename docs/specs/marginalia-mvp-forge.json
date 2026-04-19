@@ -1,0 +1,66 @@
+[
+  {
+    "id": 1,
+    "category": "simple",
+    "description": "Create scripts/mic-fallback.py — records 3s audio from MacBook mic via sounddevice, sends base64 PCM to POST /inference, prints 3 options. Add sounddevice to server/requirements.txt.",
+    "verify": "cd /Users/elias/marginalia && MARGINALIA_DUMMY=1 server/.venv/bin/python -m uvicorn server.app:app --host 0.0.0.0 --port 8080 & sleep 2 && server/.venv/bin/python scripts/mic-fallback.py --test && kill %1",
+    "passes": false,
+    "skipped": false
+  },
+  {
+    "id": 2,
+    "category": "moderate",
+    "description": "Create server/static/calendar.html — dark-themed weekly calendar grid. Connects to /events SSE stream. When tool_executed event arrives for createCalendarHold, renders a colored event block with title and dates. Animations on insert. No external dependencies.",
+    "verify": "cd /Users/elias/marginalia && test -f server/static/calendar.html && grep 'EventSource' server/static/calendar.html",
+    "passes": false,
+    "skipped": false
+  },
+  {
+    "id": 3,
+    "category": "moderate",
+    "description": "Create site/index.html + site/style.css — Marginalia landing page. Hero with tagline, 8 verticals section (Counsel, Clinical, Floor, Diligence, Counselor, Defense, Executive, Press) with fine-tuning data narrative for each, How It Works 3-step, footer with contact. Dark theme, zero external deps. Show training data moat for each vertical.",
+    "verify": "cd /Users/elias/marginalia && test -f site/index.html && test -f site/style.css",
+    "passes": false,
+    "skipped": false
+  },
+  {
+    "id": 4,
+    "category": "moderate",
+    "description": "Add to server/app.py: GET /events SSE endpoint via StreamingResponse + asyncio.Queue, POST /inference-text accepting {text} and returning 3 options without audio, broadcast tool_executed events from /tool-call to SSE subscribers, mount /static for calendar page.",
+    "verify": "cd /Users/elias/marginalia && MARGINALIA_DUMMY=1 server/.venv/bin/python -c \"from server.app import app; print('imports ok')\"",
+    "passes": false,
+    "skipped": false
+  },
+  {
+    "id": 5,
+    "category": "simple",
+    "description": "Create server/context.md with demo scenario (manager role, direct report burnout/time-off, consider workload). Update SYSTEM_PROMPT in server/app.py to load and incorporate this context file.",
+    "verify": "cd /Users/elias/marginalia && test -f server/context.md && grep 'context' server/app.py",
+    "passes": false,
+    "skipped": false
+  },
+  {
+    "id": 6,
+    "category": "simple",
+    "description": "Update glasses/src/main.ts to read server URL from URL query param (?server=host:port) with fallback to hardcoded default. Create scripts/setup-hotspot.sh that detects MacBook IP on hotspot interface and prints the glasses app URL.",
+    "verify": "cd /Users/elias/marginalia && grep 'URLSearchParams\\|searchParams' glasses/src/main.ts && test -f scripts/setup-hotspot.sh",
+    "passes": false,
+    "skipped": false
+  },
+  {
+    "id": 7,
+    "category": "simple",
+    "description": "Create scripts/integration-test.md — step-by-step G2 hardware integration checklist with pass/fail actions for each step: static text, audio capture, audio POST, options display, ring selection, tool-call. Includes MacBook mic pivot instructions.",
+    "verify": "cd /Users/elias/marginalia && test -f scripts/integration-test.md",
+    "passes": false,
+    "skipped": false
+  },
+  {
+    "id": 8,
+    "category": "simple",
+    "description": "Create scripts/demo-script.md (5-min timed script: Act 1 frame 60s, Act 2 live demo 2m45s, Act 3 company 75s) and scripts/volunteer-briefing.md (exact line, pace, tone, fallback to pre-recorded audio).",
+    "verify": "cd /Users/elias/marginalia && test -f scripts/demo-script.md && test -f scripts/volunteer-briefing.md",
+    "passes": false,
+    "skipped": false
+  }
+]

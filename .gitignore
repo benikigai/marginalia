@@ -26,3 +26,7 @@ credentials.json
 *.wav
 *.mp3
 !scripts/test-audio/
+
+g2-notes/
+glasses-starter/
+glasses-toolkit/
