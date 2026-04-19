@@ -20,14 +20,17 @@ struct ContentView: View {
                         ModelDownloadSection(downloader: downloader)
                     }
 
-                    // C: Pipeline + Lens mirror
+                    // C: Glasses HUD
                     LensMirrorSection(engine: engine, g2: g2)
 
                     // D: Activity log
                     ActivityLogSection(engine: engine)
 
-                    // E: Debug tools (collapsed)
-                    DebugToolsSection(engine: engine, server: server, g2: g2)
+                    // E: G2 Connection
+                    G2ConnectionSection(engine: engine, g2: g2)
+
+                    // F: Debug tools (collapsed)
+                    DebugToolsSection(engine: engine, server: server)
 
                     Spacer().frame(height: 80) // space for floating bar
                 }
@@ -153,78 +156,121 @@ struct ModelDownloadSection: View {
     }
 }
 
-// MARK: - C: Lens Mirror
+// MARK: - C: Glasses HUD
 
 struct LensMirrorSection: View {
     @ObservedObject var engine: InferenceEngine
     @ObservedObject var g2: G2BluetoothManager
 
     var body: some View {
-        VStack(spacing: 8) {
-            // Pipeline stage indicator
-            HStack(spacing: 4) {
-                pipelineDot("VAD", active: engine.pipelineStage == .listening)
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 8))
-                    .foregroundColor(.secondary)
-                pipelineDot("STT", active: engine.pipelineStage == .stt)
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 8))
-                    .foregroundColor(.secondary)
-                pipelineDot("LLM", active: engine.pipelineStage == .llm)
+        VStack(spacing: 0) {
+            // Header — glasses frame bar
+            HStack {
+                Image(systemName: "eyeglasses")
+                    .font(.system(size: 12))
+                    .foregroundColor(.green.opacity(0.7))
+                Text("GLASSES HUD")
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .foregroundColor(.green.opacity(0.7))
+                    .tracking(2)
                 Spacer()
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(g2.connectionState == .connected || g2.connectionState == .ready ? Color.green : Color.red.opacity(0.6))
+                        .frame(width: 6, height: 6)
+                    Text(g2.connectionState == .connected || g2.connectionState == .ready ? "LIVE" : "OFF")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundColor(g2.connectionState == .connected || g2.connectionState == .ready ? .green.opacity(0.7) : .red.opacity(0.6))
+                }
                 if let stats = engine.lastStats {
                     Text("\(stats.totalMs)ms")
-                        .font(.system(size: 11, design: .monospaced))
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundColor(.green.opacity(0.5))
                 }
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color.black)
 
-            // Black mirror box
+            // Lens display
             ZStack {
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: 0)
                     .fill(Color.black)
-                    .frame(minHeight: 120)
+                    .frame(minHeight: 140)
 
                 if engine.pipelineStage == .stt || engine.pipelineStage == .llm {
-                    VStack(spacing: 8) {
+                    VStack(spacing: 10) {
                         ProgressView()
                             .tint(.green)
                         Text(engine.pipelineStage.rawValue)
                             .font(.system(size: 13, design: .monospaced))
-                            .foregroundColor(.green)
+                            .foregroundColor(.green.opacity(0.8))
                     }
                 } else if !g2.lensText.isEmpty {
                     Text(g2.lensText)
                         .font(.system(size: 14, design: .monospaced))
                         .foregroundColor(.green)
-                        .padding()
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 } else if let options = engine.lastOptions {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 8) {
                         ForEach(Array(options.enumerated()), id: \.offset) { i, opt in
-                            Text("\(i == 0 ? "\u{25C9}" : "\u{25CB}") \(opt.label)")
-                                .font(.system(size: 14, design: .monospaced))
-                                .foregroundColor(.green)
+                            HStack(spacing: 8) {
+                                Text(i == 0 ? "\u{25B6}" : "\u{25CB}")
+                                    .font(.system(size: 10, design: .monospaced))
+                                    .foregroundColor(i == 0 ? .green : .green.opacity(0.5))
+                                Text(opt.label)
+                                    .font(.system(size: 13, design: .monospaced))
+                                    .foregroundColor(i == 0 ? .green : .green.opacity(0.6))
+                            }
                         }
                     }
-                    .padding()
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
-                    Text(engine.displayText)
-                        .font(.system(size: 16, design: .monospaced))
-                        .foregroundColor(.green)
+                    VStack(spacing: 6) {
+                        Image(systemName: "eye")
+                            .font(.system(size: 20))
+                            .foregroundColor(.green.opacity(0.2))
+                        Text("Waiting for input...")
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundColor(.green.opacity(0.3))
+                    }
                 }
             }
+
+            // Pipeline bar
+            HStack(spacing: 4) {
+                pipelineDot("VAD", active: engine.pipelineStage == .listening)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 7))
+                    .foregroundColor(.green.opacity(0.3))
+                pipelineDot("STT", active: engine.pipelineStage == .stt)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 7))
+                    .foregroundColor(.green.opacity(0.3))
+                pipelineDot("LLM", active: engine.pipelineStage == .llm)
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color.black)
         }
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(Color.green.opacity(0.2), lineWidth: 1)
+        )
     }
 
     private func pipelineDot(_ label: String, active: Bool) -> some View {
         HStack(spacing: 3) {
             Circle()
-                .fill(active ? Color.green : Color.gray.opacity(0.4))
+                .fill(active ? Color.green : Color.green.opacity(0.15))
                 .frame(width: 6, height: 6)
             Text(label)
-                .font(.system(size: 10, weight: active ? .bold : .regular, design: .monospaced))
-                .foregroundColor(active ? .green : .secondary)
+                .font(.system(size: 9, weight: active ? .bold : .regular, design: .monospaced))
+                .foregroundColor(active ? .green : .green.opacity(0.3))
         }
     }
 }
@@ -311,12 +357,148 @@ struct ActivityLogSection: View {
     }
 }
 
-// MARK: - E: Debug Tools
+// MARK: - E: G2 Connection
+
+struct G2ConnectionSection: View {
+    @ObservedObject var engine: InferenceEngine
+    @ObservedObject var g2: G2BluetoothManager
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Image(systemName: "eyeglasses")
+                    .font(.system(size: 14))
+                Text("G2 Glasses")
+                    .font(.system(size: 15, weight: .semibold))
+                Spacer()
+            }
+
+            StatusRow(label: "BLE Status", status: g2.connectionState.rawValue)
+
+            if g2.connectionState == .disconnected || g2.connectionState == .error {
+                Button(action: { g2.startScan() }) {
+                    Label("Scan for G2", systemImage: "antenna.radiowaves.left.and.right")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
+            }
+
+            if g2.connectionState == .scanning {
+                HStack {
+                    ProgressView().scaleEffect(0.8)
+                    Text("Scanning...")
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Button("Stop") { g2.stopScan() }
+                        .font(.system(size: 12))
+                }
+            }
+
+            ForEach(Array(g2.discoveredPairs.keys.sorted()), id: \.self) { key in
+                if let pair = g2.discoveredPairs[key] {
+                    Button(action: { g2.connect(pairKey: key) }) {
+                        HStack {
+                            Image(systemName: "eyeglasses")
+                            VStack(alignment: .leading) {
+                                Text(key)
+                                    .font(.system(size: 13, weight: .medium))
+                                HStack(spacing: 4) {
+                                    Text("L: \(pair.left != nil ? "\u{2713}" : "\u{2014}")")
+                                    Text("R: \(pair.right != nil ? "\u{2713}" : "\u{2014}")")
+                                }
+                                .font(.system(size: 10, design: .monospaced))
+                                .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            if pair.isComplete {
+                                Image(systemName: "arrow.right.circle.fill")
+                                    .foregroundColor(.green)
+                            } else {
+                                Image(systemName: "arrow.right.circle")
+                                    .foregroundColor(.orange)
+                            }
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+
+            if g2.connectionState == .connected || g2.connectionState == .ready {
+                VStack(spacing: 8) {
+                    HStack {
+                        Button(action: { g2.sendText("TEST 123") }) {
+                            Label("Test Lens", systemImage: "eye")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.orange)
+
+                        Button(action: {
+                            if let options = engine.lastOptions {
+                                g2.sendOptions(options)
+                            } else {
+                                g2.sendText("Marginalia ready")
+                            }
+                        }) {
+                            Label("Send to Lens", systemImage: "arrow.up.right")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.green)
+
+                        Button(action: { g2.sendText("") }) {
+                            Label("Clear", systemImage: "xmark.circle")
+                        }
+                        .buttonStyle(.bordered)
+
+                        Spacer()
+
+                        Button(action: { g2.disconnect() }) {
+                            Image(systemName: "xmark")
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(.red)
+                    }
+
+                    HStack {
+                        Toggle(isOn: Binding(
+                            get: { g2.isAudioStreaming },
+                            set: { g2.setAudioStreaming($0) }
+                        )) {
+                            Label("G2 Mic Audio", systemImage: "mic.fill")
+                                .font(.system(size: 12))
+                        }
+                        .toggleStyle(.switch)
+
+                        if g2.audioFrameCount > 0 {
+                            Text("\(g2.audioFrameCount) frames")
+                                .font(.system(size: 10, design: .monospaced))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    if g2.isAuthenticated {
+                        StatusRow(label: "Auth", status: "Authenticated")
+                    }
+                    if let error = g2.lastError {
+                        Text(error)
+                            .font(.system(size: 11))
+                            .foregroundColor(.red)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+}
+
+// MARK: - F: Debug Tools
 
 struct DebugToolsSection: View {
     @ObservedObject var engine: InferenceEngine
     @ObservedObject var server: LocalServer
-    @ObservedObject var g2: G2BluetoothManager
     @State private var chatInput = ""
     @State private var chatResponse = ""
     @State private var isChatLoading = false
@@ -364,112 +546,6 @@ struct DebugToolsSection: View {
                         }
                         if engine.usedCloudHandoff {
                             StatusRow(label: "Cloud", status: "Handoff used")
-                        }
-                    }
-                }
-
-                // G2 Connection
-                GroupBox("G2 Connection") {
-                    VStack(alignment: .leading, spacing: 8) {
-                        StatusRow(label: "BLE Status", status: g2.connectionState.rawValue)
-
-                        if g2.connectionState == .disconnected || g2.connectionState == .error {
-                            Button(action: { g2.startScan() }) {
-                                Label("Scan for G2", systemImage: "antenna.radiowaves.left.and.right")
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .tint(.blue)
-                        }
-
-                        if g2.connectionState == .scanning {
-                            HStack {
-                                ProgressView().scaleEffect(0.8)
-                                Text("Scanning...")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                Button("Stop") { g2.stopScan() }
-                                    .font(.system(size: 12))
-                            }
-                        }
-
-                        ForEach(Array(g2.discoveredPairs.keys.sorted()), id: \.self) { key in
-                            if let pair = g2.discoveredPairs[key], pair.isComplete {
-                                Button(action: { g2.connect(pairKey: key) }) {
-                                    HStack {
-                                        Image(systemName: "eyeglasses")
-                                        VStack(alignment: .leading) {
-                                            Text(key)
-                                                .font(.system(size: 13, weight: .medium))
-                                            Text("L: \(pair.leftName ?? "?") | R: \(pair.rightName ?? "?")")
-                                                .font(.system(size: 10))
-                                                .foregroundColor(.secondary)
-                                        }
-                                        Spacer()
-                                        Image(systemName: "arrow.right.circle")
-                                    }
-                                }
-                                .buttonStyle(.bordered)
-                            }
-                        }
-
-                        if g2.connectionState == .connected || g2.connectionState == .ready {
-                            VStack(spacing: 8) {
-                                HStack {
-                                    Button(action: {
-                                        if let options = engine.lastOptions {
-                                            g2.sendOptions(options)
-                                        } else {
-                                            g2.sendText("Marginalia ready\nWaiting for input...")
-                                        }
-                                    }) {
-                                        Label("Send to Lens", systemImage: "arrow.up.right")
-                                    }
-                                    .buttonStyle(.borderedProminent)
-                                    .tint(.green)
-
-                                    Button(action: { g2.clearDisplay() }) {
-                                        Label("Clear", systemImage: "xmark.circle")
-                                    }
-                                    .buttonStyle(.bordered)
-
-                                    Spacer()
-
-                                    Button(action: { g2.disconnect() }) {
-                                        Image(systemName: "xmark")
-                                    }
-                                    .buttonStyle(.bordered)
-                                    .tint(.red)
-                                }
-
-                                // Audio streaming toggle
-                                HStack {
-                                    Toggle(isOn: Binding(
-                                        get: { g2.isAudioStreaming },
-                                        set: { g2.setAudioStreaming($0) }
-                                    )) {
-                                        Label("G2 Mic Audio", systemImage: "mic.fill")
-                                            .font(.system(size: 12))
-                                    }
-                                    .toggleStyle(.switch)
-
-                                    if g2.audioFrameCount > 0 {
-                                        Text("\(g2.audioFrameCount) frames")
-                                            .font(.system(size: 10, design: .monospaced))
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
-
-                                if g2.isAuthenticated {
-                                    StatusRow(label: "Auth", status: "Authenticated")
-                                }
-                                if let error = g2.lastError {
-                                    Text(error)
-                                        .font(.system(size: 11))
-                                        .foregroundColor(.red)
-                                }
-                            }
                         }
                     }
                 }

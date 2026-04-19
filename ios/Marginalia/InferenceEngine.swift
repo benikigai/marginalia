@@ -453,9 +453,6 @@ class InferenceEngine: ObservableObject {
 
     static func weightsDirectory() -> URL {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        if FileManager.default.fileExists(atPath: docs.appendingPathComponent("gemma-4-e2b-it").path) {
-            return docs
-        }
         let weights = docs.appendingPathComponent("weights")
         try? FileManager.default.createDirectory(at: weights, withIntermediateDirectories: true)
         return weights
