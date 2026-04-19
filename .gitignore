@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+server/.venv/
+*.egg-info/
+
+# Node
+node_modules/
+glasses/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.key
+*secret*
+credentials.json
+
+# IDE
+.vscode/
+.idea/
+
+# Audio test files
+*.wav
+*.mp3
+!scripts/test-audio/
