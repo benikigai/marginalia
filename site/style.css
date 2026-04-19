@@ -36,7 +36,7 @@ h2 {
 
 .section-lead {
   text-align: center;
-  font-size: 16px;
+  font-size: 18px;
   color: var(--text-dim);
   max-width: 640px;
   margin: 0 auto 48px;
@@ -449,9 +449,10 @@ a:hover { text-decoration: underline; }
   margin-bottom: 6px;
 }
 .vertical-pricing {
-  font-size: 11px;
+  font-size: 15px;
   color: var(--green);
-  font-weight: 500;
+  font-weight: 600;
+  margin-top: 8px;
 }
 
 /* ROADMAP */
