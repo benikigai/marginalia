@@ -14,10 +14,10 @@
   <div class="hero-badge">Built at the YC Gemma 4 Voice Agents Hackathon</div>
   <h1>Marginalia</h1>
   <p class="etymology"><em>marginalia</em> (n.) &mdash; Latin, from <em>marginalis</em>. The handwritten notes, comments, and annotations inscribed in the margins of a text. For centuries, the most important thinking happened not in the main body, but at the edge &mdash; private observations meant only for the reader's eyes.</p>
-  <p class="tagline">The private commentary on every conversation<br>that can't leave the room.</p>
+  <p class="tagline">Enterprise LLM intelligence on AR glasses.<br>Runs on your phone. Never touches a server.</p>
   <div class="hero-detail">
-    Cloud AI writes in the main text. Marginalia writes in the margin.<br>
-    Real-time tactical intelligence on smart glasses. Runs entirely on your phone. Zero cloud.
+    Every major tech company is building always-on wearables that feed your conversations to cloud models.<br>
+    Marginalia runs open-source AI locally on edge compute &mdash; designed for the conversations that legally cannot leave the room.
   </div>
   <div class="hero-cta">
     <a href="#demo" class="btn-primary">Watch the Demo</a>
@@ -27,14 +27,14 @@
 
 <!-- DEMO VIDEO -->
 <section class="demo" id="demo">
-  <h2>The Demo</h2>
-  <p class="section-lead">Executive 1:1 scenario. A direct report says they're burned out. Marginalia analyzes the conversation and surfaces three tactical options on the lens — in airplane mode.</p>
+  <h2>See It Work</h2>
+  <p class="section-lead">You're walking into an interview to hire an executive assistant. Ask Gemma for salary benchmarks before the meeting. During the meeting, ask how to respond to her counter-offer. All on your glasses. All private.</p>
 
   <div class="demo-video">
-    <!-- Replace this div with an iframe once you upload the demo video to YouTube -->
-    <div class="video-placeholder" id="videoPlaceholder">
+    <!-- Replace YOUTUBE_VIDEO_ID with your actual video ID after uploading -->
+    <div class="video-placeholder" id="videoPlaceholder" onclick="this.innerHTML='<iframe width=100% height=100% src=https://www.youtube.com/embed/YOUTUBE_VIDEO_ID?autoplay=1 frameborder=0 allowfullscreen></iframe>';this.style.cursor='default'">
       <div class="video-play">&#9654;</div>
-      <div class="video-label">Demo video — recording after final rehearsal</div>
+      <div class="video-label">60-second demo — tap to play</div>
     </div>
   </div>
 
@@ -42,70 +42,100 @@
     <div class="flow-step">
       <div class="flow-num">1</div>
       <div class="flow-content">
-        <div class="flow-label">Volunteer speaks</div>
-        <div class="flow-quote">"I've been feeling burned out. I think I need to take next week off."</div>
+        <div class="flow-label">Before the meeting</div>
+        <div class="flow-quote">"Hey Gemma &mdash; I'm interviewing an executive assistant, 5 years experience in San Francisco. What's the expected salary range?"</div>
       </div>
     </div>
     <div class="flow-arrow">&#8595;</div>
     <div class="flow-step">
       <div class="flow-num">2</div>
       <div class="flow-content">
-        <div class="flow-label">G2 mic captures audio via BLE to iPhone</div>
-        <div class="flow-detail">PCM 16kHz S16LE mono, 3-second buffer</div>
+        <div class="flow-label">Gemma responds on your HUD</div>
+        <div class="flow-lens">
+          <div class="lens-line selected">SF EA, 5yr exp: $75-95K base</div>
+          <div class="lens-line">+ $5-15K bonus typical</div>
+          <div class="lens-line">Top range $105K w/ C-suite exp</div>
+        </div>
       </div>
     </div>
     <div class="flow-arrow">&#8595;</div>
     <div class="flow-step">
       <div class="flow-num">3</div>
       <div class="flow-content">
-        <div class="flow-label">On-device inference (iPhone, airplane mode)</div>
-        <div class="flow-detail">Parakeet STT &rarr; Gemma 4 E2B &rarr; 3 options JSON with function calls</div>
+        <div class="flow-label">During the interview</div>
+        <div class="flow-quote">"She's asking for $110K. How should I respond? What questions should I ask to justify it?"</div>
       </div>
     </div>
     <div class="flow-arrow">&#8595;</div>
     <div class="flow-step">
       <div class="flow-num">4</div>
       <div class="flow-content">
-        <div class="flow-label">Options appear on G2 lens</div>
+        <div class="flow-label">Real-time tactical coaching on lens</div>
         <div class="flow-lens">
-          <div class="lens-line selected">&#9673; Approve — block Apr 21-25</div>
-          <div class="lens-line">&#9675; Counter — ask about workload</div>
-          <div class="lens-line">&#9675; Defer — send calendar hold</div>
+          <div class="lens-line selected">Ask: What C-suite execs have you supported?</div>
+          <div class="lens-line">Ask: Do you manage travel/calendar for multiple execs?</div>
+          <div class="lens-line">$110K justified if managing 3+ executives</div>
         </div>
-      </div>
-    </div>
-    <div class="flow-arrow">&#8595;</div>
-    <div class="flow-step">
-      <div class="flow-num">5</div>
-      <div class="flow-content">
-        <div class="flow-label">Tap R1 ring &rarr; calendar event created</div>
-        <div class="flow-detail">Function call executes on-device. No server, no cloud, no network.</div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- THE GLASSES -->
+<section class="glasses-spec">
+  <h2>The Hardware: Even Realities G2</h2>
+  <p class="section-lead">Smart glasses that look like regular glasses. No camera. No recording. Just a private heads-up display and a microphone.</p>
+  <div class="specs-grid">
+    <div class="spec">
+      <div class="spec-value">576&times;288</div>
+      <div class="spec-label">Micro-LED display<br>per eye (green, 4-bit)</div>
+    </div>
+    <div class="spec">
+      <div class="spec-value">No camera</div>
+      <div class="spec-label">Privacy by design<br>no recording capability</div>
+    </div>
+    <div class="spec">
+      <div class="spec-value">16kHz mic</div>
+      <div class="spec-label">Built-in microphone<br>PCM mono audio</div>
+    </div>
+    <div class="spec">
+      <div class="spec-value">BLE 5.x</div>
+      <div class="spec-label">Connects to phone<br>~28m range</div>
+    </div>
+    <div class="spec">
+      <div class="spec-value">R1 Ring</div>
+      <div class="spec-label">Input control<br>tap, scroll, select</div>
+    </div>
+    <div class="spec">
+      <div class="spec-value">~36g</div>
+      <div class="spec-label">Lightweight<br>all-day wearable</div>
+    </div>
+  </div>
+  <p class="section-note">These are not prototype goggles. They look like normal prescription glasses. That's the point &mdash; intelligence that's invisible to everyone else in the room.</p>
+</section>
+
 <!-- ARCHITECTURE -->
 <section class="architecture">
   <h2>What We Built</h2>
-  <p class="section-lead">Everything runs on one iPhone in airplane mode. The MacBook is only used as a projector.</p>
+  <p class="section-lead">Everything runs on one iPhone. No server. No cloud. No network required.</p>
 
   <div class="arch-diagram">
     <pre class="arch-ascii">
-&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;                    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
-&#9474;  G2        &#9474;       BLE        &#9474;  iPhone 17 Pro Max             &#9474;
-&#9474;  Glasses   &#9474;&#9668;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9654;&#9474;                                   &#9474;
-&#9474;            &#9474;                    &#9474;  Even Realities App            &#9474;
-&#9474;  &#9679; Mic     &#9474;&#9472;&#9472;PCM audio&#9472;&#9472;&#9472;&#9472;&#9472;&#9654;&#9474;    &#9492;&#9472;&#9472; WebView                   &#9474;
-&#9474;  &#9679; Lens    &#9474;&#9668;&#9472;&#9472;text&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9474;        loads localhost:8080     &#9474;
-&#9474;  &#9679; R1 Ring &#9474;&#9472;&#9472;tap event&#9472;&#9472;&#9472;&#9472;&#9472;&#9654;&#9474;        &#9474; HTTP (loopback)        &#9474;
-&#9474;            &#9474;                    &#9474;        &#9660;                       &#9474;
-&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;                    &#9474;  Marginalia App                &#9474;
-                                    &#9474;    &#9500;&#9472;&#9472; HTTP Server (:8080)      &#9474;
-                                    &#9474;    &#9500;&#9472;&#9472; Cactus Parakeet STT      &#9474;
-                                    &#9474;    &#9492;&#9472;&#9472; Cactus Gemma 4 E2B       &#9474;
-                                    &#9474;        (2.3B params, INT4)      &#9474;
-                                    &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+ ┌──────────────┐                 ┌──────────────────────────────────┐
+ │  G2 Glasses  │      BLE       │  iPhone                          │
+ │              │◄──────────────►│                                  │
+ │  ● Mic      ─┤── PCM audio ──►│  Marginalia App                  │
+ │  ● HUD Lens ◄┤◄── response ──│    ├── Cactus Parakeet STT       │
+ │  ● R1 Ring  ─┤── tap event ──►│    │   (speech → text, 0.6B)     │
+ │              │                 │    ├── Cactus Gemma 4 E2B        │
+ │  No camera   │                 │    │   (1.5 GB INT4, Apache 2.0) │
+ │  No recording│                 │    └── Function calling          │
+ │  ~36g        │                 │        (calendar, actions)       │
+ └──────────────┘                 └──────────────────────────────────┘
+       ↑                                        ↑
+  Looks like                            Airplane mode.
+  regular glasses.                      Zero bytes leave
+  Only you see the HUD.                 the device.
     </pre>
   </div>
 
@@ -119,7 +149,7 @@
     <div class="tech-card">
       <h4>Language Model</h4>
       <div class="tech-name">Gemma 4 E2B (Google DeepMind)</div>
-      <p>2.3B effective parameters, 5.1B total. Native audio input via 300M-parameter conformer encoder. Reasons directly over raw audio — no separate transcription step needed. Apache 2.0.</p>
+      <p>2.3B effective parameters. 1.5 GB at INT4. Native audio, native vision, and function calling in a single model. The first Apache 2.0 open-source model that enables real edge compute. Launched April 2, 2026 &mdash; 17 days ago.</p>
       <div class="tech-link"><a href="https://ai.google.dev/gemma">ai.google.dev/gemma</a></div>
     </div>
     <div class="tech-card">
@@ -143,8 +173,8 @@
         <div class="spec-label">End-to-end latency<br>(audio in &rarr; options on lens)</div>
       </div>
       <div class="spec">
-        <div class="spec-value">~2 GB</div>
-        <div class="spec-label">Total RAM<br>(both models loaded)</div>
+        <div class="spec-value">~1.5 GB</div>
+        <div class="spec-label">Gemma 4 E2B model<br>(INT4 quantized)</div>
       </div>
       <div class="spec">
         <div class="spec-value">48 tok/s</div>
