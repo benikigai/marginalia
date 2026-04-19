@@ -38,7 +38,7 @@ h2 {
   text-align: center;
   font-size: 18px;
   color: var(--text-dim);
-  max-width: 640px;
+  max-width: 1100px;
   margin: 0 auto 48px;
   line-height: 1.7;
 }
@@ -51,7 +51,7 @@ a:hover { text-decoration: underline; }
 .hero {
   text-align: center;
   padding: 100px 24px 60px;
-  max-width: 720px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 .hero-badge {
@@ -130,7 +130,7 @@ a:hover { text-decoration: underline; }
 /* DEMO */
 .demo {
   padding: 80px 24px;
-  max-width: 800px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 .demo-video {
@@ -317,7 +317,7 @@ a:hover { text-decoration: underline; }
 /* PIPELINE */
 .how-it-works {
   padding: 80px 24px;
-  max-width: 800px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 .pipeline {
@@ -458,7 +458,7 @@ a:hover { text-decoration: underline; }
 /* ROADMAP */
 .roadmap {
   padding: 80px 24px;
-  max-width: 640px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 .timeline {
@@ -501,7 +501,7 @@ a:hover { text-decoration: underline; }
 /* FOUNDER */
 .founder {
   padding: 80px 24px;
-  max-width: 800px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 .founder-content {
@@ -580,7 +580,7 @@ a:hover { text-decoration: underline; }
 /* OPEN SOURCE */
 .open-source {
   padding: 60px 24px;
-  max-width: 640px;
+  max-width: 1100px;
   margin: 0 auto;
   text-align: center;
 }
