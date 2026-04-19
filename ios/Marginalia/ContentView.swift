@@ -42,9 +42,18 @@ struct ContentView: View {
                 disabled: engine.isWarming || engine.llmStatus == "Not loaded"
             )
         }
-        .onChange(of: engine.lastOptions) { (_: [ResponseOption]?) in
-            if let options = engine.lastOptions, g2.connectionState == .connected {
+        .onChange(of: engine.lastOptions) { _, newOptions in
+            if let options = newOptions, (g2.connectionState == .connected || g2.connectionState == .ready) {
                 g2.sendOptions(options)
+            }
+        }
+        .onAppear {
+            // Wire G2 audio to inference engine
+            g2.onAudioData = { [weak engine] audioData in
+                Task { @MainActor in
+                    guard let engine = engine else { return }
+                    let _ = await engine.runInference(audioData: audioData)
+                }
             }
         }
     }
@@ -57,31 +66,27 @@ struct StatusBarSection: View {
     @ObservedObject var server: LocalServer
     @ObservedObject var g2: G2BluetoothManager
 
-    private var g2Color: Color {
-        switch g2.connectionState {
-        case .connected: return .green
-        case .scanning, .connecting, .found: return .orange
-        case .disconnected, .error: return .red
-        }
-    }
-
-    private var llmColor: Color {
-        if engine.llmStatus == "Ready" { return .green }
-        if engine.llmStatus.contains("Loading") || engine.llmStatus.contains("Warming") { return .orange }
-        return .red
-    }
-
     var body: some View {
         HStack(spacing: 12) {
-            StatusCapsule(label: "G2", color: g2Color) {
-                switch g2.connectionState {
-                case .connected: g2.disconnect()
-                case .scanning: g2.stopScan()
-                default: g2.startScan()
+            StatusCapsule(
+                label: "G2",
+                color: g2.connectionState == .connected || g2.connectionState == .ready ? .green :
+                       g2.connectionState == .scanning || g2.connectionState == .connecting || g2.connectionState == .authenticating ? .orange : .red
+            ) {
+                if g2.connectionState == .connected || g2.connectionState == .ready {
+                    g2.disconnect()
+                } else if g2.connectionState == .scanning {
+                    g2.stopScan()
+                } else {
+                    g2.startScan()
                 }
             }
 
-            StatusCapsule(label: "LLM", color: llmColor) {}
+            StatusCapsule(
+                label: "LLM",
+                color: engine.llmStatus == "Ready" ? .green :
+                       engine.llmStatus.contains("Loading") || engine.llmStatus.contains("Warming") ? .orange : .red
+            ) {}
 
             StatusCapsule(
                 label: server.isRunning ? ":8080" : "Server",
@@ -409,32 +414,61 @@ struct DebugToolsSection: View {
                             }
                         }
 
-                        if g2.connectionState == .connected {
-                            HStack {
-                                Button(action: {
-                                    if let options = engine.lastOptions {
-                                        g2.sendOptions(options)
-                                    } else {
-                                        g2.sendText("Marginalia ready\nWaiting for input...")
+                        if g2.connectionState == .connected || g2.connectionState == .ready {
+                            VStack(spacing: 8) {
+                                HStack {
+                                    Button(action: {
+                                        if let options = engine.lastOptions {
+                                            g2.sendOptions(options)
+                                        } else {
+                                            g2.sendText("Marginalia ready\nWaiting for input...")
+                                        }
+                                    }) {
+                                        Label("Send to Lens", systemImage: "arrow.up.right")
                                     }
-                                }) {
-                                    Label("Send to Lens", systemImage: "arrow.up.right")
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .tint(.green)
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.green)
 
-                                Button(action: { g2.clearDisplay() }) {
-                                    Label("Clear", systemImage: "xmark.circle")
-                                }
-                                .buttonStyle(.bordered)
+                                    Button(action: { g2.clearDisplay() }) {
+                                        Label("Clear", systemImage: "xmark.circle")
+                                    }
+                                    .buttonStyle(.bordered)
 
-                                Spacer()
+                                    Spacer()
 
-                                Button(action: { g2.disconnect() }) {
-                                    Image(systemName: "xmark")
+                                    Button(action: { g2.disconnect() }) {
+                                        Image(systemName: "xmark")
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .tint(.red)
                                 }
-                                .buttonStyle(.bordered)
-                                .tint(.red)
+
+                                // Audio streaming toggle
+                                HStack {
+                                    Toggle(isOn: Binding(
+                                        get: { g2.isAudioStreaming },
+                                        set: { g2.setAudioStreaming($0) }
+                                    )) {
+                                        Label("G2 Mic Audio", systemImage: "mic.fill")
+                                            .font(.system(size: 12))
+                                    }
+                                    .toggleStyle(.switch)
+
+                                    if g2.audioFrameCount > 0 {
+                                        Text("\(g2.audioFrameCount) frames")
+                                            .font(.system(size: 10, design: .monospaced))
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+
+                                if g2.isAuthenticated {
+                                    StatusRow(label: "Auth", status: "Authenticated")
+                                }
+                                if let error = g2.lastError {
+                                    Text(error)
+                                        .font(.system(size: 11))
+                                        .foregroundColor(.red)
+                                }
                             }
                         }
                     }

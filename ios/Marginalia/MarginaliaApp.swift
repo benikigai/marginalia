@@ -18,7 +18,7 @@ struct MarginaliaApp: App {
                         }
                     }
                 }
-                .onChange(of: downloader.llmReady) { ready in
+                .onChange(of: downloader.llmReady) { _, ready in
                     if ready {
                         Task {
                             await engine.loadModels()
