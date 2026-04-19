@@ -75,6 +75,19 @@ a:hover { text-decoration: underline; }
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+.etymology {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  max-width: 540px;
+  margin: 0 auto 28px;
+  border-left: 2px solid var(--accent);
+  padding-left: 16px;
+  text-align: left;
+}
+.etymology em {
+  color: var(--text);
+}
 .tagline {
   font-size: 22px;
   font-weight: 300;
