@@ -217,13 +217,13 @@ Marginalia is not a smart glasses company. It's an on-device vertical intelligen
 | **Executive** | Marginalia Executive | HR investigations must stay private |
 | **Journalism** | Marginalia Press | Source confidentiality is professional ethics |
 
-**Wedge vertical:** Manufacturing (Marginalia Floor). Founder has 6 years at Apple inside Foxconn --- Day One distribution that no competitor can replicate.
+**Wedge vertical:** Manufacturing (Marginalia Floor). Founder has 6 years at Apple --- Day One distribution that no competitor can replicate.
 
 **Roadmap:** Manufacturing pilots 2026, law firms 2027, health systems 2028, platform maturity 2030.
 
 ## Founder
 
-**Ben Shyong** --- Staff TPM, Meta Reality Labs (AR/VR Hardware). Previously 6 years at Apple / Foxconn. Leaving Meta August 15, 2026 to build Marginalia full-time.
+**Ben Shyong** --- Staff TPM, Meta Reality Labs (AR/VR Hardware). Previously 6 years at Apple.
 
 benjamin.shyong@gmail.com
 
