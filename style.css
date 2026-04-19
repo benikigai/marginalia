@@ -643,6 +643,41 @@ footer > p {
   margin-bottom: 4px;
 }
 
+/* PHASES */
+.phases {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 40px 0;
+}
+.phase-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+.phase-card p {
+  font-size: 15px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+.phase-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--green);
+  border: 1px solid var(--green);
+  border-radius: 4px;
+  padding: 4px 10px;
+  margin-bottom: 12px;
+}
+.phase-wip {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* APP SCREENSHOTS */
 .app-screenshots {
   display: grid;
@@ -660,6 +695,15 @@ footer > p {
   width: 100%;
   height: auto;
   display: block;
+}
+.screenshot-caption {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.screenshot-caption strong {
+  color: var(--text);
 }
 
 /* RESPONSIVE */

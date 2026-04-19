@@ -45,9 +45,26 @@
   <div class="app-screenshots">
     <div class="screenshot">
       <img src="app-dashboard.jpg" alt="Marginalia dashboard — G2 connected, models loaded, activity log">
+      <div class="screenshot-caption">
+        <strong>Dashboard.</strong> Status capsules (G2, LLM, server), VAD &rarr; STT &rarr; LLM pipeline, activity log with timestamps.
+      </div>
     </div>
     <div class="screenshot">
       <img src="app-chat.jpg" alt="Marginalia chat — Gemma 4 responding on-device with model status">
+      <div class="screenshot-caption">
+        <strong>On-device chat.</strong> Gemma 4 E2B responding locally. VAD, STT, LLM all showing Ready. G2 glasses found via BLE.
+      </div>
+    </div>
+  </div>
+
+  <div class="phases">
+    <div class="phase-card">
+      <div class="phase-badge">Phase 1 &mdash; Shipped at the hackathon</div>
+      <p>Native iOS app running Gemma 4 E2B and Parakeet STT fully on-device via Cactus Compute's inference engine. Direct Bluetooth connection to Even Realities G2 glasses, bypassing the Even Realities consumer app entirely. The iPhone is the brain, the glasses are the display, nothing touches the cloud.</p>
+    </div>
+    <div class="phase-card">
+      <div class="phase-badge phase-wip">Phase 2 &mdash; In progress</div>
+      <p>Streaming text output to the G2 lens HUD in real-time, ring-tap selection via the R1 controller, and end-to-end voice-to-function-call pipeline. When complete: a private whisper layer that listens, reasons, and executes &mdash; all before you finish the sentence.</p>
     </div>
   </div>
 
