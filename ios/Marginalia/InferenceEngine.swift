@@ -61,19 +61,6 @@ class InferenceEngine: ObservableObject {
     @Published var usedCloudHandoff = false
     @Published var isWarming = false
 
-    // Streaming transcription state
-    @Published var liveTranscript = ""
-    @Published var fullTranscript = ""  // Accumulated across utterances
-    @Published var isListening = false
-    @Published var llmResponse = ""
-    @Published var isLLMProcessing = false
-    private var listeningTask: Task<Void, Never>?
-    private var wakeWordTriggered = false
-
-    /// Chat response and latency for the raw chat feature
-    @Published var chatResponse: String?
-    @Published var chatLatencyMs: Int?
-
     private let systemPrompt = """
     You are Marginalia, a private real-time commentary layer for high-stakes \
     conversations. You listen to what the other person just said and produce \
@@ -195,8 +182,7 @@ class InferenceEngine: ObservableObject {
     /// Simple text chat with the LLM.
     func chat(prompt: String) async -> String {
         guard let llmModel = llmModel else {
-            chatResponse = "Error: LLM not loaded"
-            return chatResponse!
+            return "Error: LLM not loaded"
         }
 
         let escaped = prompt
@@ -205,7 +191,6 @@ class InferenceEngine: ObservableObject {
             .replacingOccurrences(of: "\n", with: "\\n")
         let messages = "[{\"role\":\"user\",\"content\":\"\(escaped)\"}]"
 
-        let t0 = Date()
         do {
             cactusReset(llmModel)
             let raw = try cactusComplete(llmModel, messages, #"{"max_tokens":256}"#, nil, nil)
@@ -216,14 +201,11 @@ class InferenceEngine: ObservableObject {
                let resp = envelope["response"] as? String {
                 response = resp
             }
-            chatLatencyMs = Int(Date().timeIntervalSince(t0) * 1000)
-            chatResponse = response
             let chatOption = ResponseOption(label: response, action: nil, args: nil)
             logActivity(transcript: prompt, options: [chatOption], stats: nil, source: .chat)
             return response
         } catch {
-            chatResponse = "Error: \(error.localizedDescription)"
-            return chatResponse!
+            return "Error: \(error.localizedDescription)"
         }
     }
 
@@ -469,189 +451,11 @@ class InferenceEngine: ObservableObject {
         }
     }
 
-    // MARK: - Streaming Transcription + Wake Word
-
-    /// Start continuous listening: record mic → STT every ~3s → accumulate transcript → detect wake word
-    func startListening(recorder: AudioRecorder) {
-        guard !isListening else { return }
-        isListening = true
-        pipelineStage = .listening
-        liveTranscript = ""
-        fullTranscript = ""
-        llmResponse = ""
-        wakeWordTriggered = false
-
-        recorder.startRecording()
-
-        listeningTask = Task { [weak self] in
-            guard let self = self else { return }
-
-            while !Task.isCancelled && self.isListening {
-                // Wait ~3 seconds to accumulate audio
-                try? await Task.sleep(nanoseconds: 3_000_000_000)
-                guard self.isListening, !Task.isCancelled else { break }
-
-                // Drain accumulated PCM
-                let pcmData = recorder.drainAccumulatedPCM()
-                guard pcmData.count > 3200 else { continue }  // At least 100ms of audio
-
-                // Run STT
-                await self.setPipelineStage(.stt)
-                let transcript = await self.transcribeAudio(pcmData)
-
-                if !transcript.isEmpty {
-                    await MainActor.run {
-                        self.liveTranscript = transcript
-                        self.fullTranscript += (self.fullTranscript.isEmpty ? "" : " ") + transcript
-                    }
-
-                    // Check for wake word
-                    let lower = self.fullTranscript.lowercased()
-                    if !self.wakeWordTriggered && (lower.contains("hey gemma") || lower.contains("hey cactus")) {
-                        self.wakeWordTriggered = true
-                        print("[Marginalia] Wake word detected!")
-
-                        // Keep listening for the actual prompt after wake word
-                        // Wait another 5 seconds for the user to finish speaking
-                        await self.setPipelineStage(.listening)
-                        try? await Task.sleep(nanoseconds: 5_000_000_000)
-
-                        // Drain remaining audio and transcribe
-                        let promptPCM = recorder.drainAccumulatedPCM()
-                        if promptPCM.count > 3200 {
-                            let promptText = await self.transcribeAudio(promptPCM)
-                            if !promptText.isEmpty {
-                                await MainActor.run {
-                                    self.fullTranscript += " " + promptText
-                                }
-                            }
-                        }
-
-                        // Extract prompt after wake word
-                        let fullLower = self.fullTranscript.lowercased()
-                        var prompt = self.fullTranscript
-                        if let range = fullLower.range(of: "hey gemma") {
-                            prompt = String(self.fullTranscript[range.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
-                        } else if let range = fullLower.range(of: "hey cactus") {
-                            prompt = String(self.fullTranscript[range.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
-                        }
-
-                        if prompt.isEmpty {
-                            prompt = self.fullTranscript
-                        }
-
-                        // Run LLM
-                        await self.runLLMFromWakeWord(prompt: prompt)
-
-                        // Reset for next utterance
-                        await MainActor.run {
-                            self.wakeWordTriggered = false
-                            self.fullTranscript = ""
-                        }
-                    }
-                }
-
-                await self.setPipelineStage(.listening)
-            }
-        }
-    }
-
-    func stopListening(recorder: AudioRecorder) {
-        isListening = false
-        listeningTask?.cancel()
-        listeningTask = nil
-        recorder.stopRecording()
-        pipelineStage = .idle
-    }
-
-    /// Transcribe PCM audio data → text string (runs on background thread)
-    private func transcribeAudio(_ pcmData: Data) async -> String {
-        guard let sttModel = sttModel else { return "" }
-
-        return await Task.detached {
-            do {
-                let resultJson = try cactusTranscribe(sttModel, nil, nil, nil, nil, pcmData)
-                if let data = resultJson.data(using: .utf8),
-                   let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let response = obj["response"] as? String {
-                    return response.trimmingCharacters(in: .whitespacesAndNewlines)
-                }
-                return resultJson.trimmingCharacters(in: .whitespacesAndNewlines)
-            } catch {
-                print("[Marginalia] STT error: \(error)")
-                return ""
-            }
-        }.value
-    }
-
-    /// Run LLM after wake word detected
-    private func runLLMFromWakeWord(prompt: String) async {
-        guard let llmModel = llmModel else { return }
-
-        await MainActor.run {
-            self.isLLMProcessing = true
-            self.pipelineStage = .llm
-            self.llmResponse = ""
-        }
-
-        let escaped = prompt
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
-            .replacingOccurrences(of: "\n", with: "\\n")
-        let messages = "[{\"role\":\"user\",\"content\":\"\(escaped)\"}]"
-
-        let t0 = Date()
-        var responseText = ""
-
-        await Task.detached {
-            do {
-                cactusReset(llmModel)
-                let raw = try cactusComplete(llmModel, messages, #"{"max_tokens":512}"#, nil, { token, _ in
-                    // Streaming token callback — update UI progressively
-                    Task { @MainActor in
-                        responseText += token
-                        // Update every few tokens to avoid UI thrashing
-                    }
-                })
-
-                // Parse final response
-                var finalResponse = raw
-                if let data = raw.data(using: .utf8),
-                   let envelope = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let resp = envelope["response"] as? String {
-                    finalResponse = resp
-                }
-
-                let ms = Int(Date().timeIntervalSince(t0) * 1000)
-
-                await MainActor.run {
-                    self.llmResponse = finalResponse
-                    self.isLLMProcessing = false
-                    self.pipelineStage = .done
-                    self.chatLatencyMs = ms
-                    print("[Marginalia] LLM response (\(ms)ms): \(String(finalResponse.prefix(200)))")
-
-                    // Log it
-                    let opt = ResponseOption(label: finalResponse, action: nil, args: nil)
-                    self.logActivity(transcript: prompt, options: [opt],
-                                     stats: InferenceStats(sttMs: 0, llmMs: ms, totalMs: ms), source: .chat)
-                }
-            } catch {
-                await MainActor.run {
-                    self.llmResponse = "Error: \(error.localizedDescription)"
-                    self.isLLMProcessing = false
-                    self.pipelineStage = .done
-                }
-            }
-        }.value
-    }
-
-    private func setPipelineStage(_ stage: PipelineStage) async {
-        await MainActor.run { self.pipelineStage = stage }
-    }
-
     static func weightsDirectory() -> URL {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        if FileManager.default.fileExists(atPath: docs.appendingPathComponent("gemma-4-e2b-it").path) {
+            return docs
+        }
         let weights = docs.appendingPathComponent("weights")
         try? FileManager.default.createDirectory(at: weights, withIntermediateDirectories: true)
         return weights

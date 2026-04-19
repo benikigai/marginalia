@@ -38,7 +38,9 @@ class LocalServer: ObservableObject {
         }
 
         listener?.newConnectionHandler = { [weak self] connection in
-            self?.handleConnection(connection)
+            Task { @MainActor in
+                self?.handleConnection(connection)
+            }
         }
 
         listener?.start(queue: queue)

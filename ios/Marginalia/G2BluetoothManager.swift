@@ -113,11 +113,10 @@ class G2BluetoothManager: NSObject, ObservableObject {
         centralManager.scanForPeripherals(withServices: nil, options: [
             CBCentralManagerScanOptionAllowDuplicatesKey: false
         ])
-        print("[G2] Scanning for glasses... (force-close Even app first if glasses are paired)")
-        print("[G2] Looking for devices with 'Even', 'G2', '_L_', or '_R_' in name")
+        print("[G2] Scanning for glasses...")
 
-        // Auto-stop scan after 15s
-        DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in
+        // Auto-stop scan after 10s
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
             if self?.connectionState == .scanning {
                 self?.stopScan()
             }
@@ -132,13 +131,11 @@ class G2BluetoothManager: NSObject, ObservableObject {
     }
 
     func connect(pairKey: String) {
-        guard let pair = discoveredPairs[pairKey] else {
-            lastError = "Pair not found"
-            print("[G2] ERROR: No pair for key \(pairKey)")
+        guard let pair = discoveredPairs[pairKey], pair.isComplete,
+              let left = pair.left, let right = pair.right else {
+            lastError = "Pair not complete"
             return
         }
-
-        print("[G2] Pair status — L: \(pair.leftName ?? "nil") R: \(pair.rightName ?? "nil") complete: \(pair.isComplete)")
 
         stopScan()
         connectingPairKey = pairKey
@@ -148,20 +145,9 @@ class G2BluetoothManager: NSObject, ObservableObject {
         leftServicesDiscovered = false
         rightServicesDiscovered = false
 
-        // Connect whichever arms we found (don't require both)
-        if let left = pair.left {
-            centralManager.connect(left, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey: true])
-            print("[G2] Connecting left: \(pair.leftName ?? "?")")
-        }
-        if let right = pair.right {
-            centralManager.connect(right, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey: true])
-            print("[G2] Connecting right: \(pair.rightName ?? "?")")
-        }
-
-        if pair.left == nil && pair.right == nil {
-            lastError = "No peripherals to connect"
-            connectionState = .error
-        }
+        centralManager.connect(left, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey: true])
+        centralManager.connect(right, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey: true])
+        print("[G2] Connecting to pair \(pairKey)...")
     }
 
     func disconnect() {
@@ -289,6 +275,10 @@ class G2BluetoothManager: NSObject, ObservableObject {
             writeToRight(packet)
         }
         print("[G2] Sent text via UART (\(textBytes.count) bytes)")
+    }
+
+    func clearDisplay() {
+        print("[G2] clearDisplay — stub")
     }
 
     // MARK: - Text Display (G2 protocol)
@@ -434,20 +424,11 @@ extension G2BluetoothManager: CBCentralManagerDelegate {
     nonisolated func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
                                     advertisementData: [String: Any], rssi RSSI: NSNumber) {
         Task { @MainActor in
-            let name = peripheral.name ?? "(no name)"
-
-            // Log ALL devices with "Even" or "G2" anywhere, plus any device with signal > -70 dBm
-            if name.lowercased().contains("even") || name.lowercased().contains("g2") || name.contains("_L_") || name.contains("_R_") {
-                print("[G2] Found: \"\(name)\" RSSI=\(RSSI) id=\(peripheral.identifier.uuidString.prefix(8))")
-            }
-
-            // Accept: "Even G2_XX_L_YYYY", "Even G2_XX_R_YYYY", or anything with _L_ / _R_ and "Even"/"G2"
+            guard let name = peripheral.name, name.contains("G2") || name.contains("Even") else { return }
             guard name.contains("_L_") || name.contains("_R_") else { return }
-            guard name.lowercased().contains("even") || name.lowercased().contains("g2") else { return }
 
             let parts = name.components(separatedBy: "_")
-            guard parts.count > 1 else { return }
-            let channel = parts[1]
+            guard parts.count > 1, let channel = parts.count > 1 ? parts[1] : nil else { return }
 
             let pairKey = channel
 
@@ -465,9 +446,7 @@ extension G2BluetoothManager: CBCentralManagerDelegate {
 
             if discoveredPairs[pairKey]?.isComplete == true {
                 connectionState = .found
-                print("[G2] Found complete pair: L=\(discoveredPairs[pairKey]?.leftName ?? "?") R=\(discoveredPairs[pairKey]?.rightName ?? "?")")
-                // Auto-connect to first complete pair
-                connect(pairKey: pairKey)
+                print("[G2] Found pair: L=\(discoveredPairs[pairKey]?.leftName ?? "?") R=\(discoveredPairs[pairKey]?.rightName ?? "?")")
             }
         }
     }
@@ -487,9 +466,8 @@ extension G2BluetoothManager: CBCentralManagerDelegate {
                 rightConnected = true
             }
 
-            // Discover ONLY the Nordic UART service — this is what the G2 firmware exposes
-            // (discovering all services can miss UART on some firmware versions)
-            peripheral.discoverServices([uartServiceUUID])
+            // Discover all services to find whichever protocol this firmware supports
+            peripheral.discoverServices(nil)
             print("[G2] \(isLeft ? "Left" : "Right") connected, discovering services...")
 
             checkBothReady()
@@ -512,36 +490,25 @@ extension G2BluetoothManager: CBCentralManagerDelegate {
     }
 
     private func checkBothReady() {
-        // Proceed when at least one side has discovered services
-        // Don't wait for both if only one arm was found
-        let pair = discoveredPairs[connectingPairKey ?? ""]
-        let needLeft = pair?.left != nil
-        let needRight = pair?.right != nil
-        let leftDone = !needLeft || leftServicesDiscovered
-        let rightDone = !needRight || rightServicesDiscovered
-
-        guard leftDone && rightDone else { return }
-
-        print("[G2] Services discovered — L:\(leftServicesDiscovered) R:\(rightServicesDiscovered)")
-        print("[G2] Write chars — g2L:\(leftWriteChar != nil) g2R:\(rightWriteChar != nil) uartL:\(leftUartTX != nil) uartR:\(rightUartTX != nil)")
-
-        // Prefer UART (the protocol the Even app actually uses)
-        if leftUartTX != nil || rightUartTX != nil {
-            usingUART = true
-            let initCmd = Data([0x4D, 0x01])
-            writeToLeft(initCmd)
-            writeToRight(initCmd)
-            isAuthenticated = true
-            connectionState = .ready
-            startHeartbeat()
-            print("[G2] UART mode — initialized, ready")
-        } else if leftWriteChar != nil || rightWriteChar != nil {
-            authenticate()
-        } else {
-            lastError = "No write characteristics found — force-close Even app and retry"
-            connectionState = .error
-            print("[G2] ERROR: No writable characteristics discovered")
-            print("[G2] TIP: Force-close the Even Realities app, then scan again")
+        if leftServicesDiscovered && rightServicesDiscovered {
+            if leftWriteChar != nil || leftUartTX != nil {
+                // Got characteristics — authenticate
+                if usingUART {
+                    // UART mode: send init command, skip full auth
+                    let initCmd = Data([0x4D, 0x01])
+                    writeToLeft(initCmd)
+                    writeToRight(initCmd)
+                    isAuthenticated = true
+                    connectionState = .ready
+                    startHeartbeat()
+                    print("[G2] UART mode — initialized, ready")
+                } else {
+                    authenticate()
+                }
+            } else {
+                lastError = "No write characteristics found"
+                connectionState = .error
+            }
         }
     }
 }

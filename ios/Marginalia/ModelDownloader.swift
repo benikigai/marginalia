@@ -42,8 +42,13 @@ class ModelDownloader: ObservableObject {
 
     init() {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        weightsDir = docs.appendingPathComponent("weights")
-        try? FileManager.default.createDirectory(at: weightsDir, withIntermediateDirectories: true)
+        // Check if models are directly in Documents/ (Finder transfer)
+        if FileManager.default.fileExists(atPath: docs.appendingPathComponent("gemma-4-e2b-it").path) {
+            weightsDir = docs
+        } else {
+            weightsDir = docs.appendingPathComponent("weights")
+            try? FileManager.default.createDirectory(at: weightsDir, withIntermediateDirectories: true)
+        }
         checkExisting()
     }
 

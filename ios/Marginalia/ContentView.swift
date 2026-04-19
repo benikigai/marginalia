@@ -5,7 +5,6 @@ struct ContentView: View {
     @ObservedObject var server: LocalServer
     @ObservedObject var downloader: ModelDownloader
     @StateObject private var g2 = G2BluetoothManager()
-    @StateObject private var recorder = AudioRecorder()
     @State private var inputText = ""
     @State private var isProcessing = false
 
@@ -23,9 +22,6 @@ struct ContentView: View {
 
                     // C: Pipeline + Lens mirror
                     LensMirrorSection(engine: engine, g2: g2)
-
-                    // C2: Live Transcript + Mic
-                    LiveTranscriptSection(engine: engine, recorder: recorder, g2: g2)
 
                     // D: Activity log
                     ActivityLogSection(engine: engine)
@@ -49,11 +45,6 @@ struct ContentView: View {
         .onChange(of: engine.lastOptions) { _, newOptions in
             if let options = newOptions, (g2.connectionState == .connected || g2.connectionState == .ready) {
                 g2.sendOptions(options)
-            }
-        }
-        .onChange(of: engine.llmResponse) { _, response in
-            if !response.isEmpty, (g2.connectionState == .connected || g2.connectionState == .ready) {
-                g2.sendText(String(response.prefix(200)))
             }
         }
         .onAppear {
@@ -238,126 +229,6 @@ struct LensMirrorSection: View {
     }
 }
 
-// MARK: - C2: Live Transcript
-
-struct LiveTranscriptSection: View {
-    @ObservedObject var engine: InferenceEngine
-    @ObservedObject var recorder: AudioRecorder
-    @ObservedObject var g2: G2BluetoothManager
-
-    var body: some View {
-        VStack(spacing: 10) {
-            // Mic toggle + status
-            HStack {
-                Button(action: toggleListening) {
-                    HStack(spacing: 6) {
-                        Image(systemName: engine.isListening ? "mic.fill" : "mic.slash.fill")
-                            .foregroundColor(engine.isListening ? .red : .secondary)
-                        Text(engine.isListening ? "Listening..." : "Start Listening")
-                            .font(.system(size: 13, weight: .medium))
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(engine.isListening ? Color.red.opacity(0.15) : Color(.systemGray5))
-                    .cornerRadius(20)
-                }
-                .buttonStyle(.plain)
-                .disabled(engine.sttStatus != "Ready")
-
-                Spacer()
-
-                if engine.isListening {
-                    // Audio level indicator
-                    HStack(spacing: 2) {
-                        ForEach(0..<5, id: \.self) { i in
-                            RoundedRectangle(cornerRadius: 1)
-                                .fill(Float(i) < recorder.audioLevel * 50 ? Color.green : Color.gray.opacity(0.3))
-                                .frame(width: 3, height: CGFloat(6 + i * 3))
-                        }
-                    }
-
-                    Text("Say \"Hey Gemma\" to activate")
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary)
-                }
-            }
-
-            // Live transcript display
-            if engine.isListening || !engine.fullTranscript.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    // Scrolling transcript
-                    if !engine.fullTranscript.isEmpty {
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text("TRANSCRIPT")
-                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                if engine.pipelineStage == .stt {
-                                    ProgressView()
-                                        .scaleEffect(0.5)
-                                }
-                            }
-                            Text(engine.fullTranscript)
-                                .font(.system(size: 14))
-                                .foregroundColor(.primary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-
-                    // LLM Response
-                    if engine.isLLMProcessing {
-                        HStack(spacing: 8) {
-                            ProgressView()
-                                .scaleEffect(0.7)
-                            Text("Gemma is thinking...")
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(.orange)
-                        }
-                    }
-
-                    if !engine.llmResponse.isEmpty {
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Image(systemName: "sparkles")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(.orange)
-                                Text("GEMMA")
-                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                    .foregroundColor(.orange)
-                                if let ms = engine.chatLatencyMs {
-                                    Text("\(ms)ms")
-                                        .font(.system(size: 9, design: .monospaced))
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            Text(engine.llmResponse)
-                                .font(.system(size: 14))
-                                .foregroundColor(.primary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .textSelection(.enabled)
-                        }
-                        .padding(10)
-                        .background(Color.orange.opacity(0.08))
-                        .cornerRadius(8)
-                    }
-                }
-                .padding(12)
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
-            }
-        }
-    }
-
-    private func toggleListening() {
-        if engine.isListening {
-            engine.stopListening(recorder: recorder)
-        } else {
-            engine.startListening(recorder: recorder)
-        }
-    }
-}
-
 // MARK: - D: Activity Log
 
 struct ActivityLogSection: View {
@@ -524,28 +395,19 @@ struct DebugToolsSection: View {
                         }
 
                         ForEach(Array(g2.discoveredPairs.keys.sorted()), id: \.self) { key in
-                            if let pair = g2.discoveredPairs[key] {
+                            if let pair = g2.discoveredPairs[key], pair.isComplete {
                                 Button(action: { g2.connect(pairKey: key) }) {
                                     HStack {
                                         Image(systemName: "eyeglasses")
                                         VStack(alignment: .leading) {
                                             Text(key)
                                                 .font(.system(size: 13, weight: .medium))
-                                            HStack(spacing: 4) {
-                                                Text("L: \(pair.left != nil ? "✓" : "—")")
-                                                Text("R: \(pair.right != nil ? "✓" : "—")")
-                                            }
-                                            .font(.system(size: 10, design: .monospaced))
-                                            .foregroundColor(.secondary)
+                                            Text("L: \(pair.leftName ?? "?") | R: \(pair.rightName ?? "?")")
+                                                .font(.system(size: 10))
+                                                .foregroundColor(.secondary)
                                         }
                                         Spacer()
-                                        if pair.isComplete {
-                                            Image(systemName: "arrow.right.circle.fill")
-                                                .foregroundColor(.green)
-                                        } else {
-                                            Image(systemName: "arrow.right.circle")
-                                                .foregroundColor(.orange)
-                                        }
+                                        Image(systemName: "arrow.right.circle")
                                     }
                                 }
                                 .buttonStyle(.bordered)
