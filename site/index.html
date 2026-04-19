@@ -4,213 +4,264 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Marginalia — On-device AI for regulated conversations</title>
-<meta name="description" content="The private intelligence layer for conversations that can't leave the room. Gemma 4 + Cactus Compute + Even Realities G2. Zero cloud.">
+<meta name="description" content="Enterprise LLM intelligence on AR glasses. Runs on your phone. Never touches a server. Gemma 4 + Cactus Compute + Even Realities G2.">
 <meta property="og:title" content="Marginalia — On-device AI for regulated conversations">
-<meta property="og:description" content="Enterprise LLM intelligence on AR glasses. Runs on your phone. Never touches a server.">
+<meta property="og:description" content="The private intelligence layer for conversations that can't leave the room. Zero cloud.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://usemarginalia.com">
 <meta name="twitter:card" content="summary_large_image">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#e0e0e0;font-family:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased}
-.page{max-width:640px;margin:0 auto;padding:0 24px}
-section{padding:80px 0;border-bottom:1px solid #1a1a1a}
-section:last-of-type{border-bottom:none}
-
-/* Hero */
-.hero{padding:120px 0 80px}
-h1{font-family:'Georgia','Times New Roman',serif;font-size:clamp(56px,10vw,96px);font-weight:400;letter-spacing:-0.02em;color:#fff;margin-bottom:24px}
-.tagline{font-size:20px;color:#ccc;margin-bottom:32px}
-.hero-cta{display:flex;gap:16px;flex-wrap:wrap;margin-top:40px}
-.hero-cta a{font-size:15px;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:500;transition:opacity 0.2s}
-.btn-primary{background:#fff;color:#0a0a0a}
-.btn-secondary{background:transparent;color:#999;border:1px solid #333}
-.btn-primary:hover,.btn-secondary:hover{opacity:0.8}
-
-/* Etymology */
-.etymology{font-family:'Georgia','Times New Roman',serif;font-style:italic;color:#888;font-size:18px;line-height:1.8;margin-bottom:32px}
-
-/* Section text */
-.prose{color:#bbb;margin-bottom:24px}
-.prose strong{color:#e0e0e0}
-.prose em{color:#999;font-style:italic}
-.standout{color:#fff;font-size:20px;margin:32px 0}
-
-/* Demo */
-.demo-video{background:#111;border-radius:8px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;margin:40px 0;cursor:pointer;border:1px solid #222;overflow:hidden}
-.demo-video iframe{width:100%;height:100%;border:none}
-.video-inner{text-align:center;color:#555}
-.video-play{font-size:48px;margin-bottom:8px}
-.video-label{font-size:13px}
-
-/* Lens mockup */
-.lens{background:#000;border:1px solid #1a3a1a;border-radius:6px;padding:20px 24px;margin:24px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:14px;color:#4ade80;line-height:1.8}
-.lens-dim{color:#2a6a2a}
-
-/* How it works */
-.step{margin-bottom:32px}
-.step-label{font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin-bottom:8px}
-
-/* Verticals */
-.verticals-list{list-style:none;padding:0}
-.verticals-list li{padding:8px 0;color:#bbb;border-bottom:1px solid #151515}
-.verticals-list li strong{color:#e0e0e0}
-
-/* Hardware */
-.hw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
-.hw-stat{text-align:center;padding:20px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a}
-.hw-val{font-size:20px;font-weight:600;color:#fff;margin-bottom:4px}
-.hw-label{font-size:12px;color:#777;line-height:1.4}
-
-/* Architecture */
-.arch{background:#0d0d0d;border:1px solid #1a1a1a;border-radius:8px;padding:24px;margin:32px 0;overflow-x:auto}
-.arch pre{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:12px;line-height:1.6;color:#888;white-space:pre}
-
-/* Founder */
-.founder-name{font-family:'Georgia','Times New Roman',serif;font-size:24px;color:#fff;margin-bottom:8px}
-.founder-role{color:#888;font-size:15px;margin-bottom:16px}
-
-/* Footer */
-footer{padding:60px 0;text-align:center;color:#555;font-size:13px;line-height:1.8}
-footer a{color:#777;text-decoration:none;margin:0 12px}
-footer a:hover{color:#ccc}
-.footer-brand{font-family:'Georgia','Times New Roman',serif;font-size:14px;letter-spacing:0.1em;text-transform:uppercase;color:#444;margin-bottom:12px}
-
-/* Responsive */
-@media(max-width:640px){
-  .hw-grid{grid-template-columns:1fr 1fr}
-  section{padding:60px 0}
-  .hero{padding:80px 0 60px}
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="page">
 
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-badge">Built at the YC Gemma 4 Voice Agents Hackathon</div>
   <h1>Marginalia</h1>
+  <p class="etymology"><em>marginalia</em> (n.) &mdash; Latin, from <em>marginalis</em>. The handwritten notes a reader inscribes in the margins of a book. Private commentary, meant only for the reader's eyes.</p>
   <p class="tagline">The private intelligence layer for conversations<br>that can't leave the room.</p>
-  <p class="prose">Cloud AI writes in the main text.<br>Marginalia writes in the margin.</p>
+  <div class="hero-detail">
+    Cloud AI writes in the main text. Marginalia writes in the margin.<br>
+    Enterprise LLM intelligence on AR glasses. Runs on your phone. Never touches a server.
+  </div>
   <div class="hero-cta">
-    <a href="#demo" class="btn-primary">Watch the demo</a>
-    <a href="https://github.com/benikigai/marginalia" class="btn-secondary">Read the code</a>
+    <a href="#demo" class="btn-primary">Watch the Demo</a>
+    <a href="https://github.com/benikigai/marginalia" class="btn-secondary">View Source</a>
   </div>
 </section>
 
-<!-- ETYMOLOGY -->
-<section>
-  <p class="etymology">marginalia (n.) Latin marginalis. The handwritten notes a reader inscribes in the margins of a book. Private commentary, meant only for the reader's eyes.</p>
-</section>
+<!-- DEMO VIDEO -->
+<section class="demo" id="demo">
+  <h2>See It Work</h2>
+  <p class="section-lead">You're walking into an interview. Ask Gemma for salary benchmarks before the meeting. During the meeting, ask how to respond to a counter-offer. All on your glasses. All private.</p>
 
-<!-- DEMO -->
-<section id="demo">
-  <div class="demo-video" id="videoPlaceholder" onclick="this.innerHTML='<iframe src=https://www.youtube.com/embed/YOUTUBE_VIDEO_ID?autoplay=1 allowfullscreen></iframe>'">
-    <div class="video-inner">
+  <div class="demo-video">
+    <div class="video-placeholder" id="videoPlaceholder" onclick="this.innerHTML='<iframe width=100% height=100% src=https://www.youtube.com/embed/YOUTUBE_VIDEO_ID?autoplay=1 frameborder=0 allowfullscreen></iframe>';this.style.cursor='default'">
       <div class="video-play">&#9654;</div>
       <div class="video-label">60-second demo &mdash; tap to play</div>
     </div>
   </div>
-</section>
 
-<!-- HOW IT WORKS -->
-<section>
-  <p class="prose">Speak. Gemma 4 on Cactus reasons over what was said &mdash; on device, on your phone, in airplane mode.</p>
-  <p class="prose">The response appears on your Even Realities G2 glasses. Only you can see it.</p>
-
-  <div class="step">
-    <div class="step-label">Before the meeting</div>
-    <p class="prose">"Hey Gemma &mdash; I'm interviewing an executive assistant, five years experience, San Francisco. What's the expected salary range?"</p>
-    <div class="lens">
-      SF EA, 5yr exp: $75-95K base<br>
-      + $5-15K bonus typical<br>
-      Top range $105K w/ C-suite exp
+  <div class="demo-flow">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-label">Before the meeting</div>
+        <div class="flow-quote">"Hey Gemma &mdash; I'm interviewing an executive assistant, 5 years experience, San Francisco. What's the expected salary range?"</div>
+      </div>
+    </div>
+    <div class="flow-arrow">&#8595;</div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-label">Gemma responds on your HUD</div>
+        <div class="flow-lens">
+          <div class="lens-line selected">SF EA, 5yr exp: $75-95K base</div>
+          <div class="lens-line">+ $5-15K bonus typical</div>
+          <div class="lens-line">Top range $105K w/ C-suite exp</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-arrow">&#8595;</div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="flow-label">During the interview</div>
+        <div class="flow-quote">"She's asking for $110K. How should I respond? What questions should I ask to justify it?"</div>
+      </div>
+    </div>
+    <div class="flow-arrow">&#8595;</div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-content">
+        <div class="flow-label">Real-time tactical coaching on lens</div>
+        <div class="flow-lens">
+          <div class="lens-line selected">Ask: What C-suite execs have you supported?</div>
+          <div class="lens-line">Ask: Do you manage travel for multiple execs?</div>
+          <div class="lens-line">$110K justified if managing 3+ executives</div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="step">
-    <div class="step-label">During the meeting</div>
-    <p class="prose">"She's asking for $110K. How should I respond? What questions should I ask to justify it?"</p>
-    <div class="lens">
-      Ask: What C-suite execs have you supported?<br>
-      Ask: Do you manage travel for multiple execs?<br>
-      <span class="lens-dim">$110K justified if managing 3+ executives</span>
-    </div>
-  </div>
-
-  <p class="prose">Real-time tactical intelligence, running entirely on the phone in your pocket. The person across the table never knows.</p>
 </section>
 
 <!-- WHY IT MATTERS -->
-<section>
-  <p class="prose">Every smart-glasses AI product runs in the cloud. That disqualifies it from every regulated conversation: HIPAA, attorney-client privilege, M&A due diligence, HR, GDPR.</p>
-  <p class="standout">Marginalia doesn't.</p>
-  <p class="prose">Gemma 4 from Google DeepMind. Apache 2.0. Released April 2, 2026. Running on Cactus Compute's inference engine, locally, on consumer hardware. 1.5 GB at INT4. Native audio, native vision, function calling.</p>
-  <p class="prose">The first product in this category where "on-device" is literally true end-to-end.</p>
+<section class="moat">
+  <h2>Why On-Device Changes Everything</h2>
+  <p class="section-lead">Every smart-glasses AI runs in the cloud. That disqualifies it from every regulated conversation &mdash; HIPAA, attorney-client privilege, M&amp;A due diligence, HR, GDPR. <em>Marginalia doesn't.</em></p>
+  <div class="moat-grid">
+    <div class="moat-item">
+      <h4>Gemma 4 E2B</h4>
+      <p>Google DeepMind. Apache 2.0. Released April 2, 2026. 1.5 GB at INT4. Native audio, native vision, function calling. The first open-source model that makes real edge compute possible.</p>
+    </div>
+    <div class="moat-item">
+      <h4>Cactus Compute</h4>
+      <p>YC S25. Announced day-one Gemma 4 support immediately after Google's release. C++ inference engine for ARM. Zero-copy memory mapping, Apple Neural Engine acceleration. 48 tok/s decode on iPhone.</p>
+    </div>
+    <div class="moat-item">
+      <h4>End-to-End On-Device</h4>
+      <p>The first product in this category where "on-device" is literally true. Audio in, intelligence out, zero bytes to any server. Verified in airplane mode.</p>
+    </div>
+  </div>
 </section>
 
 <!-- THE HARDWARE -->
-<section>
-  <p class="prose"><strong>Even Realities G2.</strong> Smart glasses that look like regular glasses. No camera. No recording capability. A micro-LED heads-up display and a microphone. That's it.</p>
-  <div class="hw-grid">
-    <div class="hw-stat"><div class="hw-val">576&times;288</div><div class="hw-label">micro-LED per eye<br>green, 4-bit greyscale</div></div>
-    <div class="hw-stat"><div class="hw-val">No camera</div><div class="hw-label">privacy by design<br>nothing to record</div></div>
-    <div class="hw-stat"><div class="hw-val">16kHz</div><div class="hw-label">built-in mic<br>PCM mono</div></div>
-    <div class="hw-stat"><div class="hw-val">~36g</div><div class="hw-label">all-day wearable<br>looks normal</div></div>
-    <div class="hw-stat"><div class="hw-val">BLE 5.x</div><div class="hw-label">phone connection<br>~28m range</div></div>
-    <div class="hw-stat"><div class="hw-val">R1 Ring</div><div class="hw-label">tap &amp; scroll<br>selection input</div></div>
-  </div>
-  <p class="prose">The person across the table sees prescription glasses. You see the intelligence you need.</p>
-</section>
+<section class="architecture">
+  <h2>The Hardware</h2>
+  <p class="section-lead">Even Realities G2. Smart glasses that look like regular glasses. No camera. No recording capability. Just a private heads-up display and a microphone.</p>
 
-<!-- ARCHITECTURE -->
-<section>
-  <div class="arch"><pre>
- ┌──────────────┐                 ┌──────────────────────────────────┐
- │  G2 Glasses  │      BLE       │  iPhone                          │
- │              │◄──────────────►│                                  │
- │  Mic        ─┤── audio ──────►│  Marginalia                      │
- │  HUD Lens   ◄┤◄── response ──│    ├── Parakeet STT (0.6B)       │
- │  R1 Ring    ─┤── input ──────►│    ├── Gemma 4 E2B (1.5GB INT4)  │
- │              │                 │    └── Function calling           │
- │  No camera.  │                 │                                  │
- │  No cloud.   │                 │  Airplane mode. Zero bytes out.  │
- └──────────────┘                 └──────────────────────────────────┘</pre></div>
+  <div class="tech-specs">
+    <div class="specs-grid">
+      <div class="spec">
+        <div class="spec-value">576&times;288</div>
+        <div class="spec-label">Micro-LED per eye<br>(green, 4-bit greyscale)</div>
+      </div>
+      <div class="spec">
+        <div class="spec-value">No camera</div>
+        <div class="spec-label">Privacy by design<br>nothing to record</div>
+      </div>
+      <div class="spec">
+        <div class="spec-value">~1.5 GB</div>
+        <div class="spec-label">Gemma 4 E2B model<br>(INT4 quantized)</div>
+      </div>
+      <div class="spec">
+        <div class="spec-value">~36g</div>
+        <div class="spec-label">All-day wearable<br>looks like normal glasses</div>
+      </div>
+      <div class="spec">
+        <div class="spec-value">&lt;5s</div>
+        <div class="spec-label">End-to-end latency<br>(voice in &rarr; HUD out)</div>
+      </div>
+      <div class="spec">
+        <div class="spec-value">0 bytes</div>
+        <div class="spec-label">Data sent to cloud<br>(verified airplane mode)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arch-diagram">
+    <pre class="arch-ascii">
+ &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;                 &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+ &#9474;  G2 Glasses  &#9474;      BLE       &#9474;  iPhone                          &#9474;
+ &#9474;              &#9474;&#9668;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9654;&#9474;                                  &#9474;
+ &#9474;  Mic        &#9472;&#9508;&#9472;&#9472; audio &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9654;&#9474;  Marginalia                      &#9474;
+ &#9474;  HUD Lens   &#9668;&#9508;&#9668;&#9472; response &#9472;&#9472;&#9474;    &#9500;&#9472;&#9472; Parakeet STT (0.6B)       &#9474;
+ &#9474;  R1 Ring    &#9472;&#9508;&#9472;&#9472; input &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9654;&#9474;    &#9500;&#9472;&#9472; Gemma 4 E2B (1.5GB INT4)  &#9474;
+ &#9474;              &#9474;                 &#9474;    &#9492;&#9472;&#9472; Function calling           &#9474;
+ &#9474;  No camera.  &#9474;                 &#9474;                                  &#9474;
+ &#9474;  No cloud.   &#9474;                 &#9474;  Airplane mode. Zero bytes out.  &#9474;
+ &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;                 &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+    </pre>
+  </div>
 </section>
 
 <!-- VERTICALS -->
-<section>
-  <p class="prose">Built for the rooms where the cloud isn't allowed.</p>
-  <ul class="verticals-list">
-    <li><strong>Marginalia Counsel</strong> &mdash; attorneys, M&amp;A, in-house counsel</li>
-    <li><strong>Marginalia Clinical</strong> &mdash; physicians, surgeons, specialists</li>
-    <li><strong>Marginalia Floor</strong> &mdash; factory operations, secure manufacturing</li>
-    <li><strong>Marginalia Diligence</strong> &mdash; investment banking, deal teams</li>
-    <li><strong>Marginalia Executive</strong> &mdash; C-suite, HR, sensitive 1:1s</li>
-    <li><strong>Marginalia Defense</strong> &mdash; intel, policy, classified environments</li>
-  </ul>
-  <p class="prose" style="margin-top:24px">Each vertical, a fine-tuned model on privileged domain corpora. Each one, deployable where generic cloud AI cannot legally go.</p>
+<section class="verticals">
+  <h2>Built for the Rooms Where Cloud Isn't Allowed</h2>
+  <p class="section-lead">Each vertical, a fine-tuned model on privileged domain corpora. Each one, deployable where generic cloud AI cannot legally go.</p>
+  <div class="vertical-grid">
+    <div class="vertical-card tier1">
+      <div class="vertical-tier">Tier 1</div>
+      <h3>Marginalia Counsel</h3>
+      <p class="vertical-who">Litigators, M&amp;A attorneys, in-house counsel</p>
+      <p class="vertical-why">Attorney-client privilege is a legal absolute. Cloud AI in a client meeting is a potential privilege waiver &mdash; a malpractice event.</p>
+      <p class="vertical-pricing">$200-500/attorney/month. AmLaw 100 firm = $1-3M ACV.</p>
+    </div>
+    <div class="vertical-card tier1">
+      <div class="vertical-tier">Tier 1</div>
+      <h3>Marginalia Clinical</h3>
+      <p class="vertical-who">Physicians, specialists, surgeons</p>
+      <p class="vertical-why">HIPAA prohibits cloud AI with patient audio. Period. Marginalia is the only legal ambient clinical intelligence.</p>
+      <p class="vertical-pricing">$150-300/physician/month. Hospital system = $5-20M ACV.</p>
+    </div>
+    <div class="vertical-card tier1">
+      <div class="vertical-tier">Tier 1</div>
+      <h3>Marginalia Diligence</h3>
+      <p class="vertical-who">Investment bankers, deal teams</p>
+      <p class="vertical-why">Material non-public information. Cloud AI in a deal room is a securities violation waiting to happen.</p>
+      <p class="vertical-pricing">$500-1000/banker/month. Bulge bracket = $10M+ ACV.</p>
+    </div>
+    <div class="vertical-card tier2">
+      <div class="vertical-tier">Tier 2 &mdash; Wedge Vertical</div>
+      <h3>Marginalia Floor</h3>
+      <p class="vertical-who">Plant managers, line supervisors, maintenance techs</p>
+      <p class="vertical-why">Manufacturing IP is aggressively guarded. Apple supply chain, defense contractors, pharma &mdash; none can use cloud AI on-site. <strong>Founder has 6 years at Apple &mdash; Day One distribution.</strong></p>
+      <p class="vertical-pricing">$50-150/operator/month. Plant rollout = $200K-2M ACV.</p>
+    </div>
+    <div class="vertical-card tier2">
+      <div class="vertical-tier">Tier 2</div>
+      <h3>Marginalia Executive</h3>
+      <p class="vertical-who">C-suite, HR partners, sensitive 1:1s</p>
+      <p class="vertical-why">Performance reviews, terminations, compensation discussions. The conversations where AI is most useful and least safe to put in the cloud.</p>
+    </div>
+    <div class="vertical-card tier2">
+      <div class="vertical-tier">Tier 2</div>
+      <h3>Marginalia Defense</h3>
+      <p class="vertical-who">Intel analysts, policy staff, classified environments</p>
+      <p class="vertical-why">Classified environments cannot use cloud AI by federal mandate.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHY NOW -->
+<section class="why-now">
+  <h2>Why Now</h2>
+  <div class="why-grid">
+    <div class="why-item">
+      <h4>The model exists</h4>
+      <p>Gemma 4 E2B shipped April 2, 2026 &mdash; 17 days ago. The first open-weight model with native audio, native vision, and function calling at 1.5 GB. Before this, edge AI meant chaining separate models. Now it's one model, one forward pass.</p>
+    </div>
+    <div class="why-item">
+      <h4>The hardware exists</h4>
+      <p>Smart glasses crossed from prototype to product. The G2 has a mic, a lens, and a ring &mdash; and looks like regular glasses. The form factor is finally invisible enough for a boardroom.</p>
+    </div>
+    <div class="why-item">
+      <h4>The regulations tightened</h4>
+      <p>Updated HIPAA enforcement, attorney-client privilege rulings, and AI safety executive orders made cloud AI in sensitive environments legally radioactive. The demand isn't hypothetical &mdash; it's compliance-driven.</p>
+    </div>
+  </div>
 </section>
 
 <!-- FOUNDER -->
-<section>
-  <div class="founder-name">Ben Shyong</div>
-  <div class="founder-role">Hardware TPM, Meta Reality Labs (AR/VR)</div>
-  <p class="prose">6 years at Apple. Shipped hardware programs used by hundreds of millions. Now building the next generation of AR devices at Meta.</p>
-  <p class="prose">The manufacturing and enterprise hardware network is Day One distribution for Marginalia Floor.</p>
-  <p class="prose" style="margin-top:24px"><a href="mailto:benjamin.shyong@gmail.com" style="color:#999">benjamin.shyong@gmail.com</a></p>
+<section class="founder">
+  <h2>The Founder</h2>
+  <div class="founder-content">
+    <div class="founder-bio">
+      <h3>Ben Shyong</h3>
+      <p class="founder-role">Hardware TPM, Meta Reality Labs (AR/VR)</p>
+      <p>6 years at Apple. Shipped hardware programs used by hundreds of millions. Now at Meta building the next generation of AR/VR devices.</p>
+      <p style="margin-top:12px"><a href="mailto:benjamin.shyong@gmail.com">benjamin.shyong@gmail.com</a></p>
+    </div>
+  </div>
 </section>
 
-</div>
+<!-- OPEN SOURCE -->
+<section class="open-source">
+  <h2>Open Source</h2>
+  <p class="section-lead">Marginalia is Apache 2.0 licensed. The full source code, architecture, and demo scripts are on GitHub.</p>
+  <div class="os-cta">
+    <a href="https://github.com/benikigai/marginalia" class="btn-primary">View on GitHub</a>
+  </div>
+  <div class="os-built-with">
+    <p>Built with</p>
+    <div class="built-logos">
+      <span>Gemma 4 E2B (Google DeepMind)</span>
+      <span>Cactus Compute (YC S25)</span>
+      <span>Even Realities G2</span>
+    </div>
+  </div>
+</section>
 
 <!-- FOOTER -->
 <footer>
   <div class="footer-brand">MARGINALIA</div>
-  <div>
+  <p>The intelligence layer for work that can't leave the room.</p>
+  <div class="footer-links">
     <a href="https://github.com/benikigai/marginalia">GitHub</a>
     <a href="mailto:benjamin.shyong@gmail.com">Contact</a>
   </div>
-  <p style="margin-top:16px">Built at the YC Gemma 4 Voice Agents Hackathon<br>Y Combinator HQ &middot; April 18&ndash;19, 2026</p>
+  <p class="footer-meta">Built at the YC Gemma 4 Voice Agents Hackathon, April 18&ndash;19 2026</p>
+  <p class="footer-meta">Hosted by Cactus Compute (YC S25) + AI Tinkerers + Google DeepMind at Y Combinator HQ, SF</p>
 </footer>
 
 </body>
