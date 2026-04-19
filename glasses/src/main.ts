@@ -27,7 +27,9 @@ function getServerUrl(): string {
   return 'http://172.20.10.2:8080'
 }
 const SERVER_URL = getServerUrl()
-const AUDIO_BUFFER_MS = 3000
+const AUDIO_BUFFER_MS = 3000       // max buffer before forced send
+const VAD_CHECK_INTERVAL_MS = 500  // check VAD every 500ms of audio
+const MIN_AUDIO_MS = 1000          // don't send less than 1s of audio
 
 // Glyphs — Ben confirmed in G2 firmware. Fallback: ● / ○ if ◉ doesn't render
 const GLYPH_SELECTED = '◉'
@@ -50,6 +52,8 @@ let options: Option[] = []
 let selectedIndex = 0
 let audioChunks: Uint8Array[] = []
 let audioBufferStartTime = 0
+let lastVadCheckTime = 0
+let vadAvailable = false
 let scrollCooldown = 0
 
 const CONTAINER_ID = 1
@@ -123,15 +127,50 @@ function onAudioFrame(pcm: Uint8Array): void {
   const now = Date.now()
   if (audioChunks.length === 0) {
     audioBufferStartTime = now
+    lastVadCheckTime = now
   }
 
   audioChunks.push(new Uint8Array(pcm)) // copy the frame
 
-  if (now - audioBufferStartTime >= AUDIO_BUFFER_MS) {
+  const elapsed = now - audioBufferStartTime
+
+  // Hard cap: always send after AUDIO_BUFFER_MS
+  if (elapsed >= AUDIO_BUFFER_MS) {
+    flushAudioBuffer('timeout')
+    return
+  }
+
+  // VAD check: every VAD_CHECK_INTERVAL_MS, ask server if speech ended
+  if (vadAvailable && elapsed >= MIN_AUDIO_MS && now - lastVadCheckTime >= VAD_CHECK_INTERVAL_MS) {
+    lastVadCheckTime = now
     const buffer = concatChunks(audioChunks)
-    audioChunks = []
-    log(`Audio buffer complete: ${buffer.length} bytes`)
-    sendAudioForInference(buffer)
+    checkVad(buffer).then((speechEnded) => {
+      if (speechEnded && state === 'LISTENING' && audioChunks.length > 0) {
+        flushAudioBuffer('vad')
+      }
+    })
+  }
+}
+
+function flushAudioBuffer(trigger: string): void {
+  const buffer = concatChunks(audioChunks)
+  audioChunks = []
+  log(`Audio flush (${trigger}): ${buffer.length} bytes`)
+  sendAudioForInference(buffer)
+}
+
+async function checkVad(pcmBuffer: Uint8Array): Promise<boolean> {
+  try {
+    const response = await fetch(`${SERVER_URL}/vad`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: pcmBuffer as unknown as BodyInit,
+    })
+    if (!response.ok) return false
+    const data = await response.json()
+    return data.speech_ended === true
+  } catch {
+    return false
   }
 }
 
@@ -329,6 +368,17 @@ async function main(): Promise<void> {
     // Show initial page
     await showStartupPage()
     log('Startup page displayed')
+
+    // Check server capabilities
+    try {
+      const healthResp = await fetch(`${SERVER_URL}/health`)
+      const health = await healthResp.json()
+      vadAvailable = health.vad_available === true
+      log(`Server health: ${JSON.stringify(health)}`)
+      log(`VAD: ${vadAvailable ? 'enabled (smart trigger)' : 'disabled (fixed 3s buffer)'}`)
+    } catch (e) {
+      log(`Health check failed: ${e}`)
+    }
 
     // Start audio capture
     startAudioCapture()

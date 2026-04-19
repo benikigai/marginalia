@@ -21,6 +21,7 @@ struct CalendarEvent {
 
 @MainActor
 class InferenceEngine: ObservableObject {
+    @Published var vadStatus = "Not loaded"
     @Published var sttStatus = "Not loaded"
     @Published var llmStatus = "Not loaded"
     @Published var displayText = "Listening..."
@@ -28,9 +29,16 @@ class InferenceEngine: ObservableObject {
     @Published var lastStats: InferenceStats?
     @Published var calendarEvents: [CalendarEvent] = []
 
+    private var vadModel: UnsafeMutableRawPointer?
     private var sttModel: UnsafeMutableRawPointer?
     private var llmModel: UnsafeMutableRawPointer?
     private var dummyMode = false
+
+    /// Cloud handoff: if on-device confidence drops below this, Cactus routes to cloud.
+    /// Set to 0 to disable (pure on-device for demo). Set to 0.8 for production.
+    var cloudHandoffThreshold: Double = 0.0
+    @Published var lastConfidence: Double?
+    @Published var usedCloudHandoff = false
 
     private let systemPrompt = """
     You are Marginalia, a private real-time commentary layer for high-stakes \
@@ -63,8 +71,25 @@ class InferenceEngine: ObservableObject {
 
     func loadModels() async {
         let weightsDir = Self.weightsDirectory()
+        let vadPath = weightsDir.appendingPathComponent("silero-vad").path
         let sttPath = weightsDir.appendingPathComponent("parakeet-tdt-0.6b-v3").path
         let llmPath = weightsDir.appendingPathComponent("gemma-4-e2b-it").path
+
+        // Load VAD model (small, fast)
+        vadStatus = "Loading..."
+        if FileManager.default.fileExists(atPath: vadPath) {
+            do {
+                vadModel = try cactusInit(vadPath, nil, false)
+                vadStatus = "Ready"
+                print("[Marginalia] VAD model loaded")
+            } catch {
+                vadStatus = "Error: \(error.localizedDescription)"
+                print("[Marginalia] VAD load failed: \(error)")
+            }
+        } else {
+            vadStatus = "Not available"
+            print("[Marginalia] VAD weights not found — using fixed buffer")
+        }
 
         // Load STT model
         sttStatus = "Loading..."
@@ -103,10 +128,32 @@ class InferenceEngine: ObservableObject {
         } else {
             llmStatus = "Weights missing"
             print("[Marginalia] LLM weights not found at \(llmPath)")
-            // Enable dummy mode as fallback
             dummyMode = true
             llmStatus = "Dummy mode"
         }
+    }
+
+    /// Run VAD on a chunk of audio. Returns true if speech ended (silence detected after speech).
+    func detectSpeechEnd(pcmData: Data) -> Bool {
+        guard let vadModel = vadModel else { return false }
+        do {
+            let resultJson = try cactusVad(vadModel, nil, nil, pcmData)
+            if let data = resultJson.data(using: .utf8),
+               let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let segments = obj["segments"] as? [[String: Any]] {
+                // VAD returns speech segments. If we had speech and now don't, speech ended.
+                let hasSpeech = !segments.isEmpty
+                if hasSpeech {
+                    let lastEnd = segments.last?["end"] as? Double ?? 0
+                    let audioLengthSec = Double(pcmData.count) / (16000.0 * 2.0) // 16kHz 16-bit
+                    // Speech ended if last segment ends >0.5s before audio end
+                    return (audioLengthSec - lastEnd) > 0.5
+                }
+            }
+        } catch {
+            print("[Marginalia] VAD error: \(error)")
+        }
+        return false
     }
 
     func runInference(audioData: Data) async -> [String: Any] {
@@ -151,15 +198,30 @@ class InferenceEngine: ObservableObject {
         let messages = """
         [{"role":"system","content":"\(systemPrompt.replacingOccurrences(of: "\"", with: "\\\"").replacingOccurrences(of: "\n", with: "\\n"))"},{"role":"user","content":"The other person just said: \\"\(transcript.replacingOccurrences(of: "\"", with: "\\\""))\\" — provide 3 tactical response options."}]
         """
-        let options = #"{"max_tokens":512}"#
+
+        // Cloud handoff: set confidence_threshold so Cactus can route to cloud if needed
+        let optionsDict: [String: Any] = cloudHandoffThreshold > 0
+            ? ["max_tokens": 512, "confidence_threshold": cloudHandoffThreshold]
+            : ["max_tokens": 512]
+        let optionsJson = String(data: try! JSONSerialization.data(withJSONObject: optionsDict), encoding: .utf8)!
 
         do {
             cactusReset(llmModel!)
-            let raw = try cactusComplete(llmModel!, messages, options, tools, nil)
+            let raw = try cactusComplete(llmModel!, messages, optionsJson, tools, nil)
             let llmMs = Int(Date().timeIntervalSince(llmStart) * 1000)
             let totalMs = Int(Date().timeIntervalSince(t0) * 1000)
 
             print("[Marginalia] LLM (\(llmMs)ms): \(String(raw.prefix(300)))")
+
+            // Parse envelope for confidence and cloud_handoff
+            if let data = raw.data(using: .utf8),
+               let envelope = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                lastConfidence = envelope["confidence"] as? Double
+                usedCloudHandoff = envelope["cloud_handoff"] as? Bool ?? false
+                if usedCloudHandoff {
+                    print("[Marginalia] Cloud handoff triggered (confidence: \(lastConfidence ?? 0))")
+                }
+            }
 
             let parsed = parseResponse(raw)
             lastOptions = parsed
@@ -173,6 +235,8 @@ class InferenceEngine: ObservableObject {
                 "options": optionDicts,
                 "transcript": transcript,
                 "inference_time_ms": totalMs,
+                "confidence": lastConfidence as Any,
+                "cloud_handoff": usedCloudHandoff,
             ]
         } catch {
             print("[Marginalia] LLM failed: \(error)")

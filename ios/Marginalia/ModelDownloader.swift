@@ -32,6 +32,8 @@ class ModelDownloader: ObservableObject {
     }
 
     static let models: [ModelSpec] = [
+        ModelSpec(name: "Silero VAD", hfRepo: "Cactus-Compute/silero-vad",
+                  localDir: "silero-vad", prefix: ""),
         ModelSpec(name: "Parakeet STT", hfRepo: "Cactus-Compute/parakeet-tdt-0.6b-v3",
                   localDir: "parakeet-tdt-0.6b-v3", prefix: ""),
         ModelSpec(name: "Gemma 4 E2B", hfRepo: "Cactus-Compute/gemma-4-E2B-it",
@@ -47,8 +49,11 @@ class ModelDownloader: ObservableObject {
         checkExisting()
     }
 
+    @Published var vadReady = false
+
     func checkExisting() {
         let fm = FileManager.default
+        vadReady = fm.fileExists(atPath: weightsDir.appendingPathComponent("silero-vad").path)
         sttReady = fm.fileExists(atPath: weightsDir.appendingPathComponent("parakeet-tdt-0.6b-v3").path)
         llmReady = fm.fileExists(atPath: weightsDir.appendingPathComponent("gemma-4-e2b-it").path)
     }

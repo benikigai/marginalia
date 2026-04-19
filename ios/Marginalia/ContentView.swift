@@ -62,9 +62,16 @@ struct ContentView: View {
                     // Model status
                     GroupBox("Inference Engine") {
                         VStack(alignment: .leading, spacing: 8) {
+                            StatusRow(label: "VAD", status: engine.vadStatus)
                             StatusRow(label: "STT Model", status: engine.sttStatus)
                             StatusRow(label: "LLM Model", status: engine.llmStatus)
                             StatusRow(label: "Server", status: server.isRunning ? "Running on :8080" : "Stopped")
+                            if let conf = engine.lastConfidence {
+                                StatusRow(label: "Confidence", status: String(format: "%.1f%%", conf * 100))
+                            }
+                            if engine.usedCloudHandoff {
+                                StatusRow(label: "Cloud", status: "Handoff used")
+                            }
                         }
                     }
 

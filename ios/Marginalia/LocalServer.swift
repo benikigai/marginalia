@@ -97,6 +97,9 @@ class LocalServer: ObservableObject {
         case ("POST", "/tool-call-json"):
             handleToolCall(request: request, rawData: rawData, connection: connection)
 
+        case ("POST", "/vad"):
+            handleVad(rawData: rawData, connection: connection)
+
         case ("GET", "/"):
             serveStaticFile("index.html", contentType: "text/html", connection: connection)
 
@@ -115,11 +118,14 @@ class LocalServer: ObservableObject {
     }
 
     private func handleHealth(connection: NWConnection) {
-        let engineReady = engine != nil
-        let body = """
-        {"status":"ok","model_loaded":\(engineReady),"server":"ios"}
-        """
-        sendResponse(connection: connection, status: 200, body: body)
+        DispatchQueue.main.sync {
+            let engineReady = engine != nil
+            let vadReady = engine?.vadStatus == "Ready"
+            let body = """
+            {"status":"ok","model_loaded":\(engineReady),"server":"ios","vad_available":\(vadReady)}
+            """
+            self.sendResponse(connection: connection, status: 200, body: body)
+        }
     }
 
     private func handleEvents(connection: NWConnection) {
@@ -155,6 +161,19 @@ class LocalServer: ObservableObject {
             } else {
                 self.sendResponse(connection: connection, status: 500, body: #"{"error":"Serialization failed"}"#)
             }
+        }
+    }
+
+    private func handleVad(rawData: Data, connection: NWConnection) {
+        let bodyData = extractBody(from: rawData) ?? Data()
+
+        DispatchQueue.main.async {
+            guard let engine = self.engine else {
+                self.sendResponse(connection: connection, status: 200, body: #"{"speech_ended":false}"#)
+                return
+            }
+            let ended = engine.detectSpeechEnd(pcmData: bodyData)
+            self.sendResponse(connection: connection, status: 200, body: #"{"speech_ended":\#(ended)}"#)
         }
     }
 
