@@ -2,7 +2,9 @@
 
 **The private commentary on every conversation that can't leave the room.**
 
-[usemarginalia.com](http://usemarginalia.com) | Built at the [YC Gemma 4 Voice Agents Hackathon](https://lu.ma/gemma4-voice), April 18-19 2026
+[usemarginalia.com](https://usemarginalia.com) | Built at the [YC Gemma 4 Voice Agents Hackathon](https://lu.ma/gemma4-voice), YC HQ San Francisco, April 18-19 2026
+
+> **Status:** Hackathon project, kept as a reference build. Needs an Even Realities G2 + R1 and an iPhone with ~7 GB of model weights to run end to end.
 
 ---
 
@@ -193,14 +195,15 @@ pip install -r requirements.txt
 MARGINALIA_DUMMY=1 python -m uvicorn server.app:app --host 0.0.0.0 --port 8080
 ```
 
-### MacBook BLE Bridge (fallback)
+### G2 BLE test (fallback)
 
 ```bash
-cd marginalia-bridge
-pip install flask bleak
-python app.py              # with G2 glasses
-python app.py --no-glasses # dry run
+cd g2-bridge
+pip install bleak
+python test-g2.py          # sends a test notification to the G2 lens over BLE
 ```
+
+The Flask relay described above (iPhone → MacBook → G2) was used on the day but is not in this repository.
 
 ## The Company
 
@@ -223,9 +226,11 @@ Marginalia is not a smart glasses company. It's an on-device vertical intelligen
 
 ## Founder
 
-**Ben Shyong** --- Staff TPM, Meta Reality Labs (AR/VR Hardware). Previously 6 years at Apple.
+**Ben Shyong** --- Staff TPM, Meta Reality Labs (AR/VR Hardware). Previously 6 years at Apple. [github.com/benikigai](https://github.com/benikigai)
 
-benjamin.shyong@gmail.com
+## Credits
+
+Built by Ben Shyong at the YC Gemma 4 Voice Agents Hackathon. `even-demo-app/` is a modified fork of Even Realities' [EvenDemoApp](https://github.com/even-realities/EvenDemoApp); inference runs on [Cactus Compute](https://cactuscompute.com) with Google DeepMind's Gemma 4.
 
 ## License
 
