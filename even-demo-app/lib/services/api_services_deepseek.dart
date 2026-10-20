@@ -8,7 +8,7 @@ class ApiDeepSeekService {
       BaseOptions(
         baseUrl: 'https://api.deepseek.com',
         headers: {
-          'Authorization': 'Bearer ${const String.fromEnvironment("DASHSCOPE_API_KEY", defaultValue: "sk-5d8fa6e859d64b3c84862b90a9eb45d1")}', // replace with your apikey
+          'Authorization': 'Bearer ${const String.fromEnvironment("DASHSCOPE_API_KEY")}', // pass with --dart-define=DASHSCOPE_API_KEY=...
           'Content-Type': 'application/json',
         },
       ),

@@ -8,7 +8,7 @@ class ApiService {
       BaseOptions(
         baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
         headers: {
-          'Authorization': 'Bearer ${const String.fromEnvironment("DASHSCOPE_API_KEY", defaultValue: "sk-3d0c51c9e1ac4502b7406abc37940c78")}', // replace with your apikey
+          'Authorization': 'Bearer ${const String.fromEnvironment("DASHSCOPE_API_KEY")}', // pass with --dart-define=DASHSCOPE_API_KEY=...
           'Content-Type': 'application/json',
         },
       ),
